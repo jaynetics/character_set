@@ -1,0 +1,9 @@
+#!/usr/bin/env ruby
+
+require 'bundler/setup'
+require 'character_set'
+
+CS = CharacterSet
+
+require "irb"
+IRB.start(__FILE__)

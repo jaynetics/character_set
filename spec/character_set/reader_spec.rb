@@ -1,0 +1,82 @@
+RSpec.describe CharacterSet::Reader do
+  describe '::codepoints_from_enumerable' do
+    def result(arg)
+      CharacterSet::Reader.codepoints_from_enumerable(arg).to_a
+    end
+
+    it 'takes an Array of Integers' do
+      expect(result([97, 98, 99])).to eq [97, 98, 99]
+    end
+
+    it 'takes an Array of Strings' do
+      expect(result(['a', 'b', 'c'])).to eq [97, 98, 99]
+    end
+
+    it 'takes a Range of Integers' do
+      expect(result(97..99)).to eq [97, 98, 99]
+    end
+
+    it 'takes a Range of Strings' do
+      expect(result('a'..'c')).to eq [97, 98, 99]
+    end
+
+    it 'takes a Set of Integers' do
+      expect(result(Set[97, 98, 99])).to eq [97, 98, 99]
+    end
+
+    it 'takes a Set of Strings' do
+      expect(result(Set['a', 'b', 'c'])).to eq [97, 98, 99]
+    end
+
+    it 'takes a CharacterSet' do
+      set = CharacterSet[97, 98, 99]
+      expect(result(set)).to eq [97, 98, 99]
+    end
+  end
+
+  describe '::codepoints_from_bracket_expression' do
+    def result(arg)
+      CharacterSet::Reader.codepoints_from_bracket_expression(arg)
+    end
+
+    it 'reads a bracket expression and returns contained codepoints' do
+      expect(result('[abc]')).to eq [97, 98, 99]
+    end
+
+    it 'can handle a negative bracket expression' do
+      expect(result('[^abc]')).to eq [97, 98, 99]
+    end
+
+    it 'can handle a bracket expression without brackets' do
+      expect(result('abc')).to eq [97, 98, 99]
+    end
+
+    it 'can handle ranges' do
+      expect(result('[a-c]')).to eq [97, 98, 99]
+    end
+
+    it 'can handle \\uHHHH escapes' do
+      expect(result('[ab\\u0063]')).to eq [97, 98, 99]
+    end
+
+    it 'can handle \\UHHHHHHHH escapes' do
+      expect(result('[ab\\U00000063]')).to eq [97, 98, 99]
+    end
+
+    it 'can handle U+HH escapes' do
+      expect(result('[abU+63]')).to eq [97, 98, 99]
+    end
+
+    it 'can handle \\u{HH} escapes' do
+      expect(result('[ab\\u{63}]')).to eq [97, 98, 99]
+    end
+
+    it 'can handle \\xHH escapes' do
+      expect(result('[ab\\x63]')).to eq [97, 98, 99]
+    end
+
+    it 'can handle mixed escapes and ranges' do
+      expect(result('[U+61-\\u{63}]')).to eq [97, 98, 99]
+    end
+  end
+end
