@@ -1,7 +1,7 @@
-class CharacterSet < SortedSet
+class CharacterSet
   class Character
     ENCODING = 'utf-8'.freeze
-    SAFELY_PRINTABLE = (0x21..0x7E).to_a - ['[', '\\', ']', '^'].map(&:ord)
+    SAFELY_PRINTABLE = (0x21..0x7E).to_a - ['-', '[', '\\', ']', '^'].map(&:ord)
 
     attr_accessor :codepoint
 
@@ -20,6 +20,8 @@ class CharacterSet < SortedSet
 
     def escape(opts = {})
       return to_s if SAFELY_PRINTABLE.include?(codepoint) && !opts[:escape_all]
+
+      return yield(self) if block_given?
 
       # https://billposer.org/Software/ListOfRepresentations.html
       case opts[:format].to_s.downcase.delete('-_ ')

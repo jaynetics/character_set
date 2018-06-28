@@ -1,6 +1,6 @@
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'set'
+
 require 'character_set/version'
 
 Gem::Specification.new do |s|
@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
   s.authors       = ['Janosch Müller']
   s.email         = ['janosch84@gmail.com']
 
-  s.summary       = 'Build, read, write, check, edit sets of Unicode codepoints.'
+  s.summary       = 'Build, read, write and compare sets of Unicode codepoints.'
   s.homepage      = 'https://github.com/janosch-x/character_set'
   s.license       = 'MIT'
 
@@ -18,11 +18,14 @@ Gem::Specification.new do |s|
   end
   s.require_paths = ['lib']
 
-  s.required_ruby_version = '>= 2.0.0'
+  if RUBY_PLATFORM !~ /java/i
+    s.extensions  = %w[ext/character_set/extconf.rb]
+  end
 
-  s.add_dependency 'sorted_integer_set_ext', '~> 0.1.1'
+  s.required_ruby_version = '>= 2.1.0'
 
   s.add_development_dependency 'bundler', '~> 1.16'
   s.add_development_dependency 'rake', '~> 10.0'
+  s.add_development_dependency 'rake-compiler', '~> 1.0'
   s.add_development_dependency 'rspec', '~> 3.0'
 end

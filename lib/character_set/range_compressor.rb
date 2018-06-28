@@ -1,22 +1,41 @@
-class CharacterSet < SortedSet
+class CharacterSet
   module RangeCompressor
     module_function
 
-    # Set#divide is far too slow unfortunately
+    COMPRESSABLE_CLASSES = %w[
+      CharacterSet
+      CharacterSet::Pure
+      ImmutableSet
+      SortedSet
+    ].freeze
+
+    # Set#divide is extremely slow unfortunately, else it would be nice for this
     # divide { |i, j| (i - j).abs == 1 }
-    def compress(codepoint_set)
-      codepoint_set.is_a?(SortedSet) || raise(ArgumentError, 'pass a SortedSet')
+    def compress(enum)
+      COMPRESSABLE_CLASSES.include?(enum.class.to_s) ||
+        raise(ArgumentError, "pass a #{COMPRESSABLE_CLASSES.join('/')}")
 
-      hash = codepoint_set.instance_variable_get('@hash')
+      ranges = []
+      previous_codepoint = nil
+      current_start = nil
+      current_end = nil
 
-      hash.each_key.each_with_object([]) do |codepoint, arr|
-        if codepoint.pred != @previous_codepoint
-          @current_range = []
-          arr << @current_range
+      enum.each do |codepoint|
+        if previous_codepoint.nil?
+          current_start = codepoint
+        elsif previous_codepoint.next != codepoint
+          # gap found, finalize previous range
+          ranges << (current_start..current_end)
+          current_start = codepoint
         end
-        @current_range << codepoint
-        @previous_codepoint = codepoint
-      end.map { |arr| arr[0]..arr[-1] }
+        current_end = codepoint
+        previous_codepoint = codepoint
+      end
+
+      # add final range
+      ranges << (current_start..current_end) if current_start
+
+      ranges
     end
   end
 end

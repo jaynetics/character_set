@@ -9,6 +9,10 @@ RSpec.describe CharacterSet::Writer do
       expect(Writer.write([97..99, 101..101])).to eq 'a-ce'
     end
 
+    it 'does not abbreviate (build ranges) iff abbreviate: is false' do
+      expect(Writer.write([97..99], abbreviate: false)).to eq 'abc'
+    end
+
     it 'adds surrounding brackets iff in_brackets: is true' do
       expect(Writer.write([97..99], in_brackets: true)).to eq '[a-c]'
     end
@@ -20,9 +24,13 @@ RSpec.describe CharacterSet::Writer do
     it 'passes format: to Character#escape' do
       expect(Writer.write([0x1F60B..0x1F60B], format: 'u+')).to eq 'U+1F60B'
     end
+
+    it 'passes a given block to Character#escape' do
+      expect(Writer.write([250..255], &:hex)).to eq 'FA-FF'
+    end
   end
 
-  describe '::' do
+  describe '::write_surrogate_pair_alternation' do
     def result(bmp_ranges, astral_codepoints)
       Writer.write_surrogate_pair_alternation(bmp_ranges, astral_codepoints)
     end

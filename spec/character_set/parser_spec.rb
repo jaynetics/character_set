@@ -1,7 +1,7 @@
-RSpec.describe CharacterSet::Reader do
+RSpec.describe CharacterSet::Parser do
   describe '::codepoints_from_enumerable' do
     def result(arg)
-      CharacterSet::Reader.codepoints_from_enumerable(arg).to_a
+      CharacterSet::Parser.codepoints_from_enumerable(arg).to_a
     end
 
     it 'takes an Array of Integers' do
@@ -36,10 +36,10 @@ RSpec.describe CharacterSet::Reader do
 
   describe '::codepoints_from_bracket_expression' do
     def result(arg)
-      CharacterSet::Reader.codepoints_from_bracket_expression(arg)
+      CharacterSet::Parser.codepoints_from_bracket_expression(arg)
     end
 
-    it 'reads a bracket expression and returns contained codepoints' do
+    it 'parses a simple bracket expression and returns contained codepoints' do
       expect(result('[abc]')).to eq [97, 98, 99]
     end
 

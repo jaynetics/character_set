@@ -1,9 +1,10 @@
-class CharacterSet < SortedSet
-  module Reader
+class CharacterSet
+  module Parser
     module_function
 
     def codepoints_from_enumerable(object)
-      raise ArgumentError, 'pass an Enumerable' unless object.is_a?(Enumerable)
+      raise ArgumentError, 'pass an Enumerable' unless object.respond_to?(:each)
+      # Use #each to check first element (only this works for all Enumerables)
       object.each do |el|
         return object            if el.is_a?(Integer) && el <= 0x10FFFF
         return object.map(&:ord) if el.is_a?(String)  && el.length == 1

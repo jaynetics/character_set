@@ -1,9 +1,12 @@
+require 'set'
+
 RSpec.describe CharacterSet::RangeCompressor do
   RangeCompressor = CharacterSet::RangeCompressor
 
   describe '::compress' do
-    it 'takes only SortedSets' do
-      expect { RangeCompressor.compress(Set[]) }.to raise_error
+    it 'takes only sorted sets as arg' do
+      expect { RangeCompressor.compress(Set[]) }.to raise_error(ArgumentError)
+      expect { RangeCompressor.compress(CharacterSet[]) }.not_to raise_error
       expect { RangeCompressor.compress(SortedSet[]) }.not_to raise_error
     end
 

@@ -1,13 +1,13 @@
-class CharacterSet < SortedSet
+class CharacterSet
   module Writer
     module_function
 
-    def write(codepoint_ranges, opts = {})
+    def write(codepoint_ranges, opts = {}, &block)
       content = codepoint_ranges.map do |range|
-        if range.size > 2
-          range.minmax.map { |cp| Character.new(cp).escape(opts) }.join('-')
+        if range.size > 2 && opts[:abbreviate] != false
+          range.minmax.map { |cp| Character.new(cp).escape(opts, &block) }.join('-')
         else
-          range.map { |cp| Character.new(cp).escape(opts) }.join
+          range.map { |cp| Character.new(cp).escape(opts, &block) }.join
         end
       end.join
       opts[:in_brackets] ? "[#{content}]" : content

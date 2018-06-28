@@ -1,9 +1,16 @@
 #!/usr/bin/env ruby
 
 require 'bundler/setup'
+
 require 'character_set'
+require 'character_set/core_ext'
+require 'character_set/pure'
 
 CS = CharacterSet
+CP = CharacterSet::Pure
+
+require 'benchmark'
+def m(&block); Benchmark.measure(&block); end
 
 require "irb"
 IRB.start(__FILE__)
