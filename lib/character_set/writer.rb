@@ -13,7 +13,7 @@ class CharacterSet
       opts[:in_brackets] ? "[#{content}]" : content
     end
 
-    def write_surrogate_pair_alternation(bmp_ranges, astral_ranges)
+    def write_surrogate_alternation(bmp_ranges, astral_ranges)
       bmp_set = write(bmp_ranges, format: :js, in_brackets: true)
       if astral_ranges.empty?
         bmp_set

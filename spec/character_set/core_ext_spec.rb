@@ -2,22 +2,57 @@ require 'character_set/core_ext'
 
 RSpec.describe 'CharacterSet core extension' do
   describe 'String#character_set' do
-    it 'returns the CharacterSet used by the String' do
-      expect('abacababa'.character_set).to eq CharacterSet[97, 98, 99]
+    it 'calls CharacterSet::of, passing self' do
+      expect(CharacterSet).to receive(:of).with('foo')
+      'foo'.character_set
     end
   end
 
-  describe 'String#covered_by?' do
-    it 'return true iff the String is covered by the given CharacterSet' do
-      expect('ab'.covered_by?(CharacterSet[97, 98, 99])).to be true
-      expect('äb'.covered_by?(CharacterSet[97, 98, 99])).to be false
+  describe 'String#covered_by_character_set?' do
+    it 'calls CharacterSet#cover?, passing self' do
+      set = CharacterSet.new
+      expect(set).to receive(:cover?).with('foo')
+      'foo'.covered_by_character_set?(set)
     end
   end
 
-  describe 'String#covered_by?' do
-    it 'return true iff the String is uses the given CharacterSet' do
-      expect('ab'.uses?(CharacterSet[97, 98, 99])).to be true
-      expect('xy'.uses?(CharacterSet[97, 98, 99])).to be false
+  describe 'String#uses_character_set?' do
+    it 'calls CharacterSet#used_by?, passing self' do
+      set = CharacterSet.new
+      expect(set).to receive(:used_by?).with('foo')
+      'foo'.uses_character_set?(set)
+    end
+  end
+
+  describe 'String#delete_character_set' do
+    it 'calls CharacterSet#delete_in, passing self' do
+      set = CharacterSet.new
+      expect(set).to receive(:delete_in).with('foo')
+      'foo'.delete_character_set(set)
+    end
+  end
+
+  describe 'String#delete_character_set!' do
+    it 'calls CharacterSet#delete_in!, passing self' do
+      set = CharacterSet.new
+      expect(set).to receive(:delete_in!).with('foo')
+      'foo'.delete_character_set!(set)
+    end
+  end
+
+  describe 'String#keep_character_set' do
+    it 'calls CharacterSet#keep_in, passing self' do
+      set = CharacterSet.new
+      expect(set).to receive(:keep_in).with('foo')
+      'foo'.keep_character_set(set)
+    end
+  end
+
+  describe 'String#keep_character_set!' do
+    it 'calls CharacterSet#keep_in!, passing self' do
+      set = CharacterSet.new
+      expect(set).to receive(:keep_in!).with('foo')
+      'foo'.keep_character_set!(set)
     end
   end
 end

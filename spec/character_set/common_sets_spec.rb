@@ -1,4 +1,17 @@
 RSpec.describe CharacterSet::CommonSets do
+  shared_examples :common_character_set do |name|
+    it 'is frozen' do
+      expect(CharacterSet.send(name)).to be_frozen
+    end
+
+    it 'has an inversion' do
+      orig = CharacterSet.send(name)
+      expect(CharacterSet.send("non_#{name}").size).to eq 0x10F800 - orig.size
+      expect(CharacterSet.send("non_#{name}").intersect?(orig)).to be false
+      expect(CharacterSet.send("non_#{name}")).to be_frozen
+    end
+  end
+
   describe '::ascii' do
     it 'includes all ASCII codepoints' do
       expect(CharacterSet.ascii.size).to eq 0x80
@@ -8,9 +21,28 @@ RSpec.describe CharacterSet::CommonSets do
       expect(CharacterSet.ascii.include?('ü')).to be false
     end
 
-    it 'is frozen' do
-      expect(CharacterSet.ascii).to be_frozen
+    it_behaves_like :common_character_set, :ascii
+  end
+
+  describe '::bmp' do
+    it 'includes all basic multilingual plane codepoints' do
+      expect(CharacterSet.bmp.size).to eq 0x10000 - 0x800
+      expect(CharacterSet.bmp).to include 'a'
+      expect(CharacterSet.bmp).to include '1'
+      expect(CharacterSet.bmp).to include 'ü'
+      expect(CharacterSet.bmp.include?(0x10000)).to be false
     end
+
+    it_behaves_like :common_character_set, :bmp
+  end
+
+  describe '::crypt' do
+    it 'includes all unicode codepoints commonly used in crypt strings' do
+      expect(CharacterSet.crypt.map(&:chr).join)
+        .to eq "./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+    end
+
+    it_behaves_like :common_character_set, :crypt
   end
 
   describe '::emoji' do
@@ -19,9 +51,7 @@ RSpec.describe CharacterSet::CommonSets do
       expect(CharacterSet.emoji).to include '😋'
     end
 
-    it 'is frozen' do
-      expect(CharacterSet.emoji).to be_frozen
-    end
+    it_behaves_like :common_character_set, :emoji
   end
 
   describe '::newline' do
@@ -30,23 +60,7 @@ RSpec.describe CharacterSet::CommonSets do
       expect(CharacterSet.newline).to include "\r"
     end
 
-    it 'is frozen' do
-      expect(CharacterSet.newline).to be_frozen
-    end
-  end
-
-  describe '::non_ascii' do
-    it 'includes all valid, non-ascii codepoints' do
-      expect(CharacterSet.non_ascii.size).to eq 0x110000 - 0x800 - 0x80
-      expect(CharacterSet.non_ascii.include?('a')).to be false
-      expect(CharacterSet.non_ascii.include?('1')).to be false
-      expect(CharacterSet.non_ascii).to include 'ü'
-      expect(CharacterSet.non_ascii).to include '😋'
-    end
-
-    it 'is frozen' do
-      expect(CharacterSet.non_ascii).to be_frozen
-    end
+    it_behaves_like :common_character_set, :newline
   end
 
   describe '::unicode' do
@@ -56,9 +70,43 @@ RSpec.describe CharacterSet::CommonSets do
       expect(CharacterSet.unicode).to include '😋'
     end
 
-    it 'is frozen' do
-      expect(CharacterSet.unicode).to be_frozen
+    it_behaves_like :common_character_set, :unicode
+  end
+
+  describe '::url_fragment' do
+    it 'includes all unicode codepoints that are valid in a URL fragment' do
+      expect(CharacterSet.url_fragment.map(&:chr).join)
+        .to eq "!$&'()*+,-./0123456789:;=?@ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz~"
     end
+
+    it_behaves_like :common_character_set, :url_fragment
+  end
+
+  describe '::url_host' do
+    it 'includes all unicode codepoints that are valid in a URL host' do
+      expect(CharacterSet.url_host.map(&:chr).join)
+        .to eq "!$&'()*+,-.0123456789:;=ABCDEFGHIJKLMNOPQRSTUVWXYZ[]_abcdefghijklmnopqrstuvwxyz~"
+    end
+
+    it_behaves_like :common_character_set, :url_host
+  end
+
+  describe '::url_path' do
+    it 'includes all unicode codepoints that are valid in a URL path' do
+      expect(CharacterSet.url_path.map(&:chr).join)
+        .to eq "!$%&'()*+,-./0123456789:=@ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz~"
+    end
+
+    it_behaves_like :common_character_set, :url_path
+  end
+
+  describe '::url_query' do
+    it 'includes all unicode codepoints that are valid in a URL query' do
+      expect(CharacterSet.url_query.map(&:chr).join)
+        .to eq "!$&'()*+,-./0123456789:;=?@ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz~"
+    end
+
+    it_behaves_like :common_character_set, :url_query
   end
 
   describe '::whitespace' do
@@ -67,8 +115,6 @@ RSpec.describe CharacterSet::CommonSets do
       expect(CharacterSet.whitespace).to include "\n"
     end
 
-    it 'is frozen' do
-      expect(CharacterSet.whitespace).to be_frozen
-    end
+    it_behaves_like :common_character_set, :whitespace
   end
 end

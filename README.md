@@ -5,7 +5,12 @@
 
 A gem to build, read, write and compare sets of Unicode codepoints.
 
-Many parts can be used independently, e.g. `CharacterSet::Character`, `CharacterSet::RangeCompressor`, `CharacterSet::Parser`, `CharacterSet::Writer`.
+Many parts can be used independently, e.g.:
+- `CharacterSet::Character`
+- `CharacterSet::Parser`
+- `CharacterSet::Writer`
+- [`RangeCompressor`](https://github.com/janosch-x/range_compressor)
+- [`RegexpPropertyValues`](https://github.com/janosch-x/regexp_property_values)
 
 ## Usage
 
@@ -20,12 +25,39 @@ CharacterSet['a', 'b', 'c']
 CharacterSet[97, 98, 99]
 CharacterSet.new('a'..'c')
 CharacterSet.new(0x61..0x63)
-CharacterSet.used_by('abacababa')
+CharacterSet.of('abacababa')
+```
+
+### Common utility sets
+
+```ruby
+CharacterSet.ascii
+CharacterSet.bmp
+CharacterSet.crypt
+CharacterSet.emoji
+CharacterSet.newline
+CharacterSet.unicode
+CharacterSet.url_fragment
+CharacterSet.url_host
+CharacterSet.url_path
+CharacterSet.url_query
+CharacterSet.whitespace
+
+# e.g.
+CharacterSet.url_query.cover?('?a=(b$c;)') # => true
+CharacterSet.emoji.sample(5) # => ["⛷", "👈", "🌞", "♑", "⛈"]
+
+# all can be prefixed with `non_`, e.g.
+(CharacterSet.non_ascii + CharacterSet.newline).delete_in(string)
+CharacterSet['🤩'].subset?(CharacterSet.non_ascii) # => true
+CharacterSet.non_bmp.intersect?(CharacterSet.newline) # => false
 ```
 
 ### Interact with Strings
 
-`#used_by?` and `#cover?` are as fast as `Regexp#match?`.
+CharacterSet can replace some `Regexp` actions on Strings, at better speed (see [benchmarks](./BENCHMARK.md)).
+
+`#used_by?` and `#cover?` can replace some `Regexp#match?` calls:
 
 ```ruby
 CharacterSet.ascii.used_by?('Tüür') # => true
@@ -33,18 +65,34 @@ CharacterSet.ascii.cover?('Tüür') # => false
 CharacterSet.ascii.cover?('Tr') # => true
 ```
 
-There is also a core extension for this.
+`#delete_in(!)` and `#keep_in(!)` can replace `String#gsub(!)` and the like:
+```ruby
+string = 'Tüür'
+
+CharacterSet.ascii.delete_in(string) # => 'üü'
+CharacterSet.ascii.keep_in(string) # => 'Tr'
+string # => 'Tüür'
+
+CharacterSet.ascii.delete_in!(string) # => 'üü'
+string # => 'üü'
+CharacterSet.ascii.keep_in!(string) # => ''
+string # => ''
+```
+
+There is also a core extension for String interaction.
 ```ruby
 require 'character_set/core_ext'
 
 "a\rb".character_set & CharacterSet.newline # => CharacterSet["\r"]
-"a\rb".uses?(CharacterSet.newline) # => true
-"a\rb".covered_by?(CharacterSet.newline) # => false
+"a\rb".uses_character_set?(CharacterSet.emoji) # => false
+"a\rb".covered_by_character_set?(CharacterSet.newline) # => false
+"a\rb".delete_character_set(CharacterSet.newline) # => 'ab'
+# etc.
 ```
 
 ### Manipulate
 
-Use any [Ruby Set method](https://ruby-doc.org/stdlib-2.5.1/libdoc/set/rdoc/Set.html) to perform modifications, checks and comparisons between character sets.
+Use any [Ruby Set method](https://ruby-doc.org/stdlib-2.5.1/libdoc/set/rdoc/Set.html), e.g. `#+`, `#-`, `#&`, `#^`, `#intersect?`, `#<`, `#>` etc. to interact with other sets, and `#add`, `#delete`, `#include?` etc. to change or check members.
 
 Where appropriate, methods take both chars and codepoints, e.g.:
 
@@ -64,7 +112,7 @@ non_a = CharacterSet['a'].inversion
 non_a.include?('a') # => false
 non_a.include?('ü') # => true
 
-# to include surrogate pair halves:
+# surrogate pair halves are not included by default
 CharacterSet['a'].inversion(include_surrogates: true)
 # => #<CharacterSet (size: 1114111)>
 ```
@@ -95,18 +143,7 @@ set.to_s(escape_all: true) { |c| "<#{c.hex}>" } # => "<61>-<63><258><1F929>"
 set.to_s(abbreviate: false) # => "abc\u0258\u{1F929}"
 
 # for full js regex compatibility in case of astral members:
-set.to_s_with_surrogate_pair_alternation # => '(?:[\u0258]|\ud83e\udd29)'
-```
-
-### Common utility sets
-
-```ruby
-CharacterSet.ascii
-CharacterSet.emoji
-CharacterSet.newline
-CharacterSet.unicode
-
-CharacterSet.emoji.sample(5) # => ["⛷", "👈", "🌞", "♑", "⛈"]
+set.to_s_with_surrogate_alternation # => '(?:[\u0258]|\ud83e\udd29)'
 ```
 
 ### Unicode plane methods
@@ -118,5 +155,5 @@ CharacterSet['a', 'ü', '🤩'].astral_part # => CharacterSet['🤩']
 CharacterSet['a', 'ü', '🤩'].bmp_ratio # => 0.6666666
 CharacterSet['a', 'ü', '🤩'].planes # => [0, 1]
 CharacterSet['a', 'ü', '🤩'].member_in_plane?(7) # => false
-CharacterSet::Character.new(0x61).plane # => 0
+CharacterSet::Character.new('a').plane # => 0
 ```

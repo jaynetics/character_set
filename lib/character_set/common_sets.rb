@@ -4,16 +4,75 @@ class CharacterSet
       @ascii ||= from_ranges(0..0x7F).freeze
     end
 
+    # basic multilingual plane
+    def bmp
+      @bmp ||= from_ranges(0..0xD7FF, 0xE000..0xFFFF).freeze
+    end
+
+    # ./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
+    def crypt
+      @crypt ||= from_ranges(0x2E..0x5A, 0x61..0x7A).freeze
+    end
+
     def newline
       @newline ||= from_ranges(0xA..0xD, 0x85..0x85, 0x2028..0x2029).freeze
     end
 
-    def non_ascii
-      @non_ascii ||= from_ranges(0x80..0xD7FF, 0xE000..0x10FFFF).freeze
-    end
-
     def unicode
       @unicode ||= from_ranges(0..0xD7FF, 0xE000..0x10FFFF).freeze
+    end
+
+    def url_fragment
+      @url_fragment ||= from_ranges(
+        0x21..0x21,
+        0x24..0x24,
+        0x26..0x3B,
+        0x3D..0x3D,
+        0x3F..0x5A,
+        0x5F..0x5F,
+        0x61..0x7A,
+        0x7E..0x7E
+      ).freeze
+    end
+
+    def url_host
+      @url_host ||= from_ranges(
+        0x21..0x21,
+        0x24..0x24,
+        0x26..0x2E,
+        0x30..0x3B,
+        0x3D..0x3D,
+        0x41..0x5B,
+        0x5D..0x5D,
+        0x5F..0x5F,
+        0x61..0x7A,
+        0x7E..0x7E
+      ).freeze
+    end
+
+    def url_path
+      @url_path ||= from_ranges(
+        0x21..0x21,
+        0x24..0x3A,
+        0x3D..0x3D,
+        0x40..0x5A,
+        0x5F..0x5F,
+        0x61..0x7A,
+        0x7E..0x7E
+      ).freeze
+    end
+
+    def url_query
+      @url_query ||= from_ranges(
+        0x21..0x21,
+        0x24..0x24,
+        0x26..0x3B,
+        0x3D..0x3D,
+        0x3F..0x5A,
+        0x5F..0x5F,
+        0x61..0x7A,
+        0x7E..0x7E
+      ).freeze
     end
 
     def whitespace
@@ -181,6 +240,19 @@ class CharacterSet
         0x1F9C0..0x1F9C0,
         0x1F9D0..0x1F9E6
       ).freeze
+    end
+
+    def respond_to_missing?(method_name, include_private = false)
+      (base = method_name[/^non_(.*)/, 1]) && respond_to?(base) || super
+    end
+
+    def method_missing(method_name, *args, &block)
+      if (base = method_name[/^non_(.*)/, 1])
+        ivar_name = "@#{method_name}"
+        return instance_variable_get(ivar_name) ||
+               instance_variable_set(ivar_name, send(base).inversion.freeze)
+      end
+      super
     end
   end
 end

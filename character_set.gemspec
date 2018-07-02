@@ -18,12 +18,14 @@ Gem::Specification.new do |s|
   end
   s.require_paths = ['lib']
 
-  if RUBY_PLATFORM !~ /java/i
-    s.extensions  = %w[ext/character_set/extconf.rb]
-  end
+  s.extensions  = %w[ext/character_set/extconf.rb]
 
   s.required_ruby_version = '>= 2.1.0'
 
+  s.add_dependency 'range_compressor', '~> 1.0'
+  s.add_dependency 'regexp_property_values', '~> 0.3.2'
+
+  s.add_development_dependency 'benchmark-ips', '~> 2.7'
   s.add_development_dependency 'bundler', '~> 1.16'
   s.add_development_dependency 'rake', '~> 10.0'
   s.add_development_dependency 'rake-compiler', '~> 1.0'

@@ -6,8 +6,11 @@ class CharacterSet
     attr_accessor :codepoint
 
     def initialize(codepoint)
-      codepoint.is_a?(Integer) || raise(ArgumentError, 'pass an Integer')
-      self.codepoint = codepoint
+      case codepoint
+      when Integer then self.codepoint = codepoint
+      when String  then self.codepoint = codepoint.ord
+      else              raise ArgumentError, 'pass an Integer or String'
+      end
     end
 
     def to_s
@@ -41,7 +44,7 @@ class CharacterSet
     end
 
     def plane
-      codepoint / CharacterSet::PLANE_SIZE
+      codepoint / 0x10000
     end
 
     private

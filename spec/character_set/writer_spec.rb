@@ -30,9 +30,9 @@ RSpec.describe CharacterSet::Writer do
     end
   end
 
-  describe '::write_surrogate_pair_alternation' do
+  describe '::write_surrogate_alternation' do
     def result(bmp_ranges, astral_codepoints)
-      Writer.write_surrogate_pair_alternation(bmp_ranges, astral_codepoints)
+      Writer.write_surrogate_alternation(bmp_ranges, astral_codepoints)
     end
 
     it 'turns bmp and astral ranges into an alternation expression' do

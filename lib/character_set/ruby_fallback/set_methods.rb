@@ -2,42 +2,61 @@ class CharacterSet
   module RubyFallback
     module SetMethods
       Enumerable.instance_methods.concat(%w[empty? length size]).each do |mthd|
-        define_method(mthd) do |*args, &block|
-          @__set.__send__(mthd, *args, &block)
-        end
+        class_eval <<-RUBY, __FILE__, __LINE__ + 1
+          def #{mthd}(*args, &block)
+            @__set.#{mthd}(*args, &block)
+          end
+        RUBY
       end
 
-      %w[< <= > >= proper_subset? proper_superset?
+      %w[< <= > >= disjoint? intersect? proper_subset? proper_superset?
          subset? superset?].each do |mthd|
-        define_method(mthd) do |enum, &block|
-          enum = enum.instance_variable_get(:@__set) if enum.is_a?(CharacterSet)
-          @__set.__send__(mthd, enum, &block)
-        end
+        class_eval <<-RUBY, __FILE__, __LINE__ + 1
+          def #{mthd}(enum, &block)
+            if enum.is_a?(CharacterSet) || enum.is_a?(CharacterSet::Pure)
+              enum = enum.instance_variable_get(:@__set)
+            end
+            @__set.#{mthd}(enum, &block)
+          end
+        RUBY
       end
 
-      %w[<< === add add? clear collect! delete delete? delete_if each
-         filter! hash include? map! member? merge keep_if reject!
+      %w[<< === add add? clear collect! delete delete? delete_if
+         each filter! hash include? map! member? keep_if reject!
          select! subtract].each do |mthd|
-        define_method(mthd) do |*args, &block|
-          result = @__set.__send__(mthd, *args, &block)
-          result.is_a?(Set) ? self : result
-        end
+        class_eval <<-RUBY, __FILE__, __LINE__ + 1
+          def #{mthd}(*args, &block)
+            result = @__set.#{mthd}(*args, &block)
+            result.is_a?(Set) ? self : result
+          end
+        RUBY
       end
 
       %w[& + - ^ | difference intersection union].each do |mthd|
-        define_method(mthd) do |enum, &block|
-          if enum.respond_to?(:map)
-            enum = enum.map { |el| el.is_a?(String) ? el.ord : el }
+        class_eval <<-RUBY, __FILE__, __LINE__ + 1
+          def #{mthd}(enum, &block)
+            if enum.respond_to?(:map)
+              enum = enum.map { |el| el.is_a?(String) ? el.ord : el }
+            end
+            self.class.new(@__set.#{mthd}(enum, &block).to_a)
           end
-          self.class.new(@__set.__send__(mthd, enum, &block).to_a)
-        end
+        RUBY
       end
 
       %w[freeze taint untaint].each do |mthd|
-        define_method(mthd) do
-          @__set.__send__(mthd)
-          super
-        end
+        class_eval <<-RUBY, __FILE__, __LINE__ + 1
+          def #{mthd}
+            #{'@__set.#{mthd}' unless mthd == 'freeze' && RUBY_PLATFORM[/java/]}
+            super
+          end
+        RUBY
+      end
+
+      def merge(other)
+        raise ArgumentError, 'pass an Enumerable' unless other.respond_to?(:each)
+        # pass through #add to use the checks in SetMethodAdapters
+        other.each { |e| add(e) }
+        self
       end
 
       def ==(other)

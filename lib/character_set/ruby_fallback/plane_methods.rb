@@ -2,25 +2,25 @@ class CharacterSet
   module RubyFallback
     module PlaneMethods
       def bmp_part
-        @bmp_part ||= dup.keep_if { |cp| cp < PLANE_SIZE }
+        dup.keep_if { |cp| cp < 0x10000 }
       end
 
       def astral_part
-        @astral_part ||= dup.keep_if { |cp| cp >= PLANE_SIZE }
+        dup.keep_if { |cp| cp >= 0x10000 }
       end
 
       def planes
         plane_set = {}
-        div = PLANE_SIZE.to_f
+        plane_size = 0x10000.to_f
         each do |cp|
-          plane = (cp / div).floor
+          plane = (cp / plane_size).floor
           plane_set[plane] = true
         end
         plane_set.keys
       end
 
       def member_in_plane?(num)
-        ((num * PLANE_SIZE)...((num + 1) * PLANE_SIZE)).any? { |cp| include?(cp) }
+        ((num * 0x10000)...((num + 1) * 0x10000)).any? { |cp| include?(cp) }
       end
     end
   end

@@ -6,9 +6,15 @@ class CharacterSet
       class_eval <<-RUBY, __FILE__, __LINE__ + 1
         def #{method}(arg)
           case arg
-          when String  then super(arg.ord)
-          when Integer then super(arg)
-          else raise ArgumentError, 'pass a String or an Integer'
+          when String
+            super(arg.ord)
+          when Integer
+            if arg < 0 || arg > 0x10FFFF
+              raise ArgumentError, 'pass an Integer between 0 and 0x10FFFF'
+            end
+            super(arg)
+          else
+            raise ArgumentError, 'pass a String or an Integer'
           end
         end
       RUBY

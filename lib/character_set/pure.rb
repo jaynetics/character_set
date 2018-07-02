@@ -1,12 +1,13 @@
 require 'character_set'
 require 'character_set/ruby_fallback'
 
+# CharacterSet::Pure uses only Ruby implementations.
+# It is equal to CharacterSet if the C ext can't be loaded.
 class CharacterSet
-  class Pure < ::CharacterSet
-    # equal to CharacterSet if that is pure (e.g. if loading C ext failed)
-    unless ancestors.include?(RubyFallback)
-      prepend CharacterSet::RubyFallback
-      prepend CharacterSet::SetMethodAdapters
-    end
+  class Pure
+    prepend CharacterSet::RubyFallback
+    prepend CharacterSet::SetMethodAdapters
+    include CharacterSet::SharedMethods
+    extend CharacterSet::CommonSets
   end
 end

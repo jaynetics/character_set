@@ -5,10 +5,10 @@ class CharacterSet
     def codepoints_from_enumerable(object)
       raise ArgumentError, 'pass an Enumerable' unless object.respond_to?(:each)
       # Use #each to check first element (only this works for all Enumerables)
-      object.each do |el|
-        return object            if el.is_a?(Integer) && el <= 0x10FFFF
-        return object.map(&:ord) if el.is_a?(String)  && el.length == 1
-        raise ArgumentError, "#{el.inspect} is not valid as a codepoint"
+      object.each do |e|
+        return object            if e.is_a?(Integer) && e >= 0 && e < 0x110000
+        return object.map(&:ord) if e.is_a?(String)  && e.length == 1
+        raise ArgumentError, "#{e.inspect} is not valid as a codepoint"
       end
     end
 

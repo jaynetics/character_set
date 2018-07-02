@@ -2,9 +2,17 @@ RSpec.describe CharacterSet::Character do
   Character = described_class
 
   describe '#initialize' do
-    it 'raises ArgumentError unless passed an Integer' do
-      expect { Character.new(:foo) }
-        .to raise_error(ArgumentError, 'pass an Integer')
+    it 'works with Integers' do
+      expect(Character.new(97).codepoint).to eq 97
+    end
+
+    it 'works with Strings' do
+      expect(Character.new('a').codepoint).to eq 97
+    end
+
+    it 'raises ArgumentError if passed anything else' do
+      expect { Character.new(:foo) }.to raise_error(ArgumentError)
+      expect { Character.new(nil) }.to raise_error(ArgumentError)
     end
   end
 
