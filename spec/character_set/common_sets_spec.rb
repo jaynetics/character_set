@@ -24,6 +24,9 @@ RSpec.describe CharacterSet::CommonSets do
     it_behaves_like :common_character_set, :ascii
   end
 
+  # these tests are slow on java, the one above shall suffice
+  next if RUBY_PLATFORM[/java/i]
+
   describe '::bmp' do
     it 'includes all basic multilingual plane codepoints' do
       expect(CharacterSet.bmp.size).to eq 0x10000 - 0x800

@@ -1,6 +1,6 @@
 require 'character_set/core_ext'
 
-RSpec.describe 'CharacterSet core extension' do
+RSpec.describe 'CharacterSet String core extension' do
   describe 'String#character_set' do
     it 'calls CharacterSet::of, passing self' do
       expect(CharacterSet).to receive(:of).with('foo')

@@ -18,10 +18,22 @@ class CharacterSet
           string.start_with?('[^') ? result.inversion : result
         end
 
-        def self.for_property(prop)
-          require 'regexp_property_values'
-          property = RegexpPropertyValues[prop]
+        def self.of_property(property_name)
+          @regexp_property_values_required ||= require 'regexp_property_values'
+
+          property = RegexpPropertyValues[property_name.to_s]
           from_ranges(*property.matched_ranges)
+        end
+
+        def self.of_regexp(regexp)
+          @regexp_parser_required ||= require 'regexp_parser'
+
+          root = ::Regexp::Parser.parse(regexp)
+          of_expression(root)
+        end
+
+        def self.of_expression(expression)
+          ExpressionConverter.convert(expression)
         end
 
         def initialize(enumerable = [])

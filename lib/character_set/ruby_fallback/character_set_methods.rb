@@ -21,8 +21,17 @@ class CharacterSet
         new_set
       end
 
+      def case_insensitive
+        new_set = dup
+        each do |cp|
+          swapped_cps = cp.chr('utf-8').swapcase.codepoints
+          swapped_cps.size == 1 && new_set << swapped_cps[0]
+        end
+        new_set
+      end
+
       def ranges
-        require 'range_compressor'
+        @range_compressor_required ||= require 'range_compressor'
         RangeCompressor.compress(self)
       end
 

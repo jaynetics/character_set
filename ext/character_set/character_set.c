@@ -1,5 +1,6 @@
 #include "ruby.h"
 #include "ruby/encoding.h"
+#include "unicode_casefold_table.h"
 
 #define SETBIT(byte_arr, bit) (byte_arr[bit >> 3] |=  (1 << (bit & 0x07)))
 #define CLRBIT(byte_arr, bit) (byte_arr[bit >> 3] &= ~(1 << (bit & 0x07)))
@@ -541,6 +542,36 @@ add_str_cp_to_arr(unsigned int str_cp, cp_byte *cp_arr) {
   return 1;
 }
 
+static VALUE
+method_case_insensitive(VALUE self) {
+  cp_index i;
+  cp_byte *new_cps;
+
+  new_cps = calloc(UNICODE_BYTES, sizeof(cp_byte));
+
+  FOR_EACH_ACTIVE_CODEPOINT(SETBIT(new_cps, cp));
+
+  for (i = 0; i < CASEFOLD_COUNT; i++) {
+    casefold_mapping m = unicode_casefold_table[i];
+
+    if      (TSTBIT(cps, m.from)) { SETBIT(new_cps, m.to); }
+    else if (TSTBIT(cps, m.to)) { SETBIT(new_cps, m.from); }
+  }
+
+  return NEW_CHARACTER_SET(RBASIC(self)->klass, new_cps);
+
+  // OnigCaseFoldType flags;
+  // rb_encoding *enc;
+  //
+  // enc = rb_utf8_encoding();
+  //
+  // ONIGENC_CASE_UPCASE | ONIGENC_CASE_DOWNCASE (not public on ruby < 2.4)
+  // flags = (1<<13) | (1<<14);
+  //
+  // // case_map args: flags, pp, end, to, to_end, enc
+  // enc->case_map(flags, (const OnigUChar**)&cp, ?, ?, ?, enc);
+}
+
 static inline VALUE
 each_sb_cp(VALUE str, str_cp_handler func, cp_byte *cp_arr) {
   long i;
@@ -773,6 +804,7 @@ Init_character_set()
   rb_define_method(cs, "planes",           method_planes, 0);
   rb_define_method(cs, "member_in_plane?", method_member_in_plane_p, 1);
   rb_define_method(cs, "ext_inversion",    method_ext_inversion, -1);
+  rb_define_method(cs, "case_insensitive", method_case_insensitive, 0);
   rb_define_method(cs, "used_by?",         method_used_by_p, 1);
   rb_define_method(cs, "cover?",           method_cover_p, 1);
   rb_define_method(cs, "delete_in",        method_delete_in, 1);

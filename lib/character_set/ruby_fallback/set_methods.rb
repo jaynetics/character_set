@@ -43,13 +43,21 @@ class CharacterSet
         RUBY
       end
 
-      %w[freeze taint untaint].each do |mthd|
+      %w[taint untaint].each do |mthd|
         class_eval <<-RUBY, __FILE__, __LINE__ + 1
           def #{mthd}
-            #{'@__set.#{mthd}' unless mthd == 'freeze' && RUBY_PLATFORM[/java/]}
+            @__set.#{mthd}
             super
           end
         RUBY
+      end
+
+      unless RUBY_PLATFORM[/java/i]
+        def freeze
+          @__set.to_a
+          @__set.freeze
+          super
+        end
       end
 
       def merge(other)

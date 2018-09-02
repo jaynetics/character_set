@@ -10,7 +10,6 @@ Many parts can be used independently, e.g.:
 - `CharacterSet::Parser`
 - `CharacterSet::Writer`
 - [`RangeCompressor`](https://github.com/janosch-x/range_compressor)
-- [`RegexpPropertyValues`](https://github.com/janosch-x/regexp_property_values)
 
 ## Usage
 
@@ -19,13 +18,27 @@ Many parts can be used independently, e.g.:
 These all produce a `CharacterSet` containing `a`, `b` and `c`:
 
 ```ruby
-CharacterSet.parse('[a-c]')
-CharacterSet.parse('\x61-\u0063')
 CharacterSet['a', 'b', 'c']
 CharacterSet[97, 98, 99]
 CharacterSet.new('a'..'c')
 CharacterSet.new(0x61..0x63)
 CharacterSet.of('abacababa')
+CharacterSet.parse('[a-c]')
+CharacterSet.parse('\U00000061-\U00000063')
+```
+
+If the gems [`regexp_parser`](https://github.com/ammar/regexp_parser) and [`regexp_property_values`](https://github.com/janosch-x/regexp_property_values) are installed, `::of_regexp` and `::of_property` can also be used. `::of_regexp` can handle intersections, negations, and set nesting:
+
+```ruby
+# are there any non-digit ascii chars classified as emoji?
+set = CharacterSet.of_regexp(/[\D&&[:ascii:]&&\p{emoji}]/)
+
+# ... of course there are!
+set.to_a(stringify: true) # => ["#", "*"]
+
+# with the core extension:
+require 'character_set/core_ext/regexp_ext'
+/[a-e&&[^c]]/.character_set # => CharacterSet['a', 'b', 'd', 'e']
 ```
 
 ### Common utility sets
@@ -48,9 +61,7 @@ CharacterSet.url_query.cover?('?a=(b$c;)') # => true
 CharacterSet.emoji.sample(5) # => ["⛷", "👈", "🌞", "♑", "⛈"]
 
 # all can be prefixed with `non_`, e.g.
-(CharacterSet.non_ascii + CharacterSet.newline).delete_in(string)
-CharacterSet['🤩'].subset?(CharacterSet.non_ascii) # => true
-CharacterSet.non_bmp.intersect?(CharacterSet.newline) # => false
+CharacterSet.non_ascii.delete_in(string)
 ```
 
 ### Interact with Strings
@@ -81,7 +92,7 @@ string # => ''
 
 There is also a core extension for String interaction.
 ```ruby
-require 'character_set/core_ext'
+require 'character_set/core_ext/string_ext'
 
 "a\rb".character_set & CharacterSet.newline # => CharacterSet["\r"]
 "a\rb".uses_character_set?(CharacterSet.emoji) # => false
@@ -92,15 +103,15 @@ require 'character_set/core_ext'
 
 ### Manipulate
 
-Use any [Ruby Set method](https://ruby-doc.org/stdlib-2.5.1/libdoc/set/rdoc/Set.html), e.g. `#+`, `#-`, `#&`, `#^`, `#intersect?`, `#<`, `#>` etc. to interact with other sets, and `#add`, `#delete`, `#include?` etc. to change or check members.
+Use any [Ruby Set method](https://ruby-doc.org/stdlib-2.5.1/libdoc/set/rdoc/Set.html), e.g. `#+`, `#-`, `#&`, `#^`, `#intersect?`, `#<`, `#>` etc. to interact with other sets. Use `#add`, `#delete`, `#include?` etc. to change or check for members.
 
 Where appropriate, methods take both chars and codepoints, e.g.:
 
 ```ruby
 CharacterSet['a'].add('b') # => CharacterSet['a', 'b']
 CharacterSet['a'].add(98) # => CharacterSet['a', 'b']
-CharacterSet['a'].include?('b') # => false
-CharacterSet['a'].include?(0x62) # => false
+CharacterSet['a'].include?('a') # => true
+CharacterSet['a'].include?(0x61) # => true
 ```
 
 `#inversion` can be used to create a `CharacterSet` with all valid Unicode codepoints that are not in the current set:
@@ -115,6 +126,12 @@ non_a.include?('ü') # => true
 # surrogate pair halves are not included by default
 CharacterSet['a'].inversion(include_surrogates: true)
 # => #<CharacterSet (size: 1114111)>
+```
+
+`#case_insensitive` can be used to create a `CharacterSet` where upper/lower case codepoints are supplemented:
+
+```ruby
+CharacterSet['1', 'a'].case_insensitive # => CharacterSet['1', 'A', 'a']
 ```
 
 ### Write
@@ -157,3 +174,7 @@ CharacterSet['a', 'ü', '🤩'].planes # => [0, 1]
 CharacterSet['a', 'ü', '🤩'].member_in_plane?(7) # => false
 CharacterSet::Character.new('a').plane # => 0
 ```
+
+### Contributions
+
+Feel free to send suggestions, point out issues, or submit pull requests.
