@@ -1,5 +1,5 @@
-RSpec.describe CharacterSet::CommonSets do
-  shared_examples :common_character_set do |name|
+RSpec.describe CharacterSet::PredefinedSets do
+  shared_examples :predefined_character_set do |name|
     it 'is frozen' do
       expect(CharacterSet.send(name)).to be_frozen
     end
@@ -21,11 +21,35 @@ RSpec.describe CharacterSet::CommonSets do
       expect(CharacterSet.ascii.include?('ü')).to be false
     end
 
-    it_behaves_like :common_character_set, :ascii
+    it_behaves_like :predefined_character_set, :ascii
   end
 
   # these tests are slow on java, the one above shall suffice
   next if RUBY_PLATFORM[/java/i]
+
+  describe '::ascii_alnum' do
+    it 'includes all ASCII letters and numbers' do
+      expect(CharacterSet.ascii_alnum.size).to eq 62
+      expect(CharacterSet.ascii_alnum).to include 'a'
+      expect(CharacterSet.ascii_alnum).to include '1'
+      expect(CharacterSet.ascii_alnum.include?('.')).to be false
+      expect(CharacterSet.ascii_alnum.include?('ü')).to be false
+    end
+
+    it_behaves_like :predefined_character_set, :ascii_alnum
+  end
+
+  describe '::ascii_letters' do
+    it 'includes all ASCII letters' do
+      expect(CharacterSet.ascii_letters.size).to eq 52
+      expect(CharacterSet.ascii_letters).to include 'a'
+      expect(CharacterSet.ascii_letters.include?('1')).to be false
+      expect(CharacterSet.ascii_letters.include?('.')).to be false
+      expect(CharacterSet.ascii_letters.include?('ü')).to be false
+    end
+
+    it_behaves_like :predefined_character_set, :ascii_letters
+  end
 
   describe '::bmp' do
     it 'includes all basic multilingual plane codepoints' do
@@ -36,7 +60,7 @@ RSpec.describe CharacterSet::CommonSets do
       expect(CharacterSet.bmp.include?(0x10000)).to be false
     end
 
-    it_behaves_like :common_character_set, :bmp
+    it_behaves_like :predefined_character_set, :bmp
   end
 
   describe '::crypt' do
@@ -45,7 +69,7 @@ RSpec.describe CharacterSet::CommonSets do
         .to eq "./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
     end
 
-    it_behaves_like :common_character_set, :crypt
+    it_behaves_like :predefined_character_set, :crypt
   end
 
   describe '::emoji' do
@@ -54,7 +78,7 @@ RSpec.describe CharacterSet::CommonSets do
       expect(CharacterSet.emoji).to include '😋'
     end
 
-    it_behaves_like :common_character_set, :emoji
+    it_behaves_like :predefined_character_set, :emoji
   end
 
   describe '::newline' do
@@ -63,7 +87,7 @@ RSpec.describe CharacterSet::CommonSets do
       expect(CharacterSet.newline).to include "\r"
     end
 
-    it_behaves_like :common_character_set, :newline
+    it_behaves_like :predefined_character_set, :newline
   end
 
   describe '::unicode' do
@@ -73,7 +97,7 @@ RSpec.describe CharacterSet::CommonSets do
       expect(CharacterSet.unicode).to include '😋'
     end
 
-    it_behaves_like :common_character_set, :unicode
+    it_behaves_like :predefined_character_set, :unicode
   end
 
   describe '::url_fragment' do
@@ -82,7 +106,7 @@ RSpec.describe CharacterSet::CommonSets do
         .to eq "!$&'()*+,-./0123456789:;=?@ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz~"
     end
 
-    it_behaves_like :common_character_set, :url_fragment
+    it_behaves_like :predefined_character_set, :url_fragment
   end
 
   describe '::url_host' do
@@ -91,7 +115,7 @@ RSpec.describe CharacterSet::CommonSets do
         .to eq "!$&'()*+,-.0123456789:;=ABCDEFGHIJKLMNOPQRSTUVWXYZ[]_abcdefghijklmnopqrstuvwxyz~"
     end
 
-    it_behaves_like :common_character_set, :url_host
+    it_behaves_like :predefined_character_set, :url_host
   end
 
   describe '::url_path' do
@@ -100,7 +124,7 @@ RSpec.describe CharacterSet::CommonSets do
         .to eq "!$%&'()*+,-./0123456789:=@ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz~"
     end
 
-    it_behaves_like :common_character_set, :url_path
+    it_behaves_like :predefined_character_set, :url_path
   end
 
   describe '::url_query' do
@@ -109,7 +133,7 @@ RSpec.describe CharacterSet::CommonSets do
         .to eq "!$&'()*+,-./0123456789:;=?@ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz~"
     end
 
-    it_behaves_like :common_character_set, :url_query
+    it_behaves_like :predefined_character_set, :url_query
   end
 
   describe '::whitespace' do
@@ -118,6 +142,6 @@ RSpec.describe CharacterSet::CommonSets do
       expect(CharacterSet.whitespace).to include "\n"
     end
 
-    it_behaves_like :common_character_set, :whitespace
+    it_behaves_like :predefined_character_set, :whitespace
   end
 end

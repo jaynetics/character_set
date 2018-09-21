@@ -8,6 +8,6 @@ class CharacterSet
     prepend CharacterSet::RubyFallback
     prepend CharacterSet::SetMethodAdapters
     include CharacterSet::SharedMethods
-    extend CharacterSet::CommonSets
+    extend CharacterSet::PredefinedSets
   end
 end

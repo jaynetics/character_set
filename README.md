@@ -13,6 +13,16 @@ Many parts can be used independently, e.g.:
 
 ## Usage
 
+### Usage examples
+
+```ruby
+CharacterSet.url_query.cover?('?a=(b$c;)') # => true
+
+CharacterSet.non_ascii.delete_in!(string)
+
+CharacterSet.emoji.sample(5) # => ["⛷", "👈", "🌞", "♑", "⛈"]
+```
+
 ### Parse/Initialize
 
 These all produce a `CharacterSet` containing `a`, `b` and `c`:
@@ -27,41 +37,25 @@ CharacterSet.parse('[a-c]')
 CharacterSet.parse('\U00000061-\U00000063')
 ```
 
-If the gems [`regexp_parser`](https://github.com/ammar/regexp_parser) and [`regexp_property_values`](https://github.com/janosch-x/regexp_property_values) are installed, `::of_regexp` and `::of_property` can also be used. `::of_regexp` can handle intersections, negations, and set nesting:
+If the gems [`regexp_parser`](https://github.com/ammar/regexp_parser) and [`regexp_property_values`](https://github.com/janosch-x/regexp_property_values) are installed, `::of_regexp` and `::of_property` can also be used. `::of_regexp` can handle intersections, negations, and set nesting.
 
 ```ruby
-# are there any non-digit ascii chars classified as emoji?
-set = CharacterSet.of_regexp(/[\D&&[:ascii:]&&\p{emoji}]/)
+CharacterSet.of_property('Thai') # => #<CharacterSet (size: 86)>
 
-# ... of course there are!
-set.to_a(stringify: true) # => ["#", "*"]
-
-# with the core extension:
 require 'character_set/core_ext/regexp_ext'
-/[a-e&&[^c]]/.character_set # => CharacterSet['a', 'b', 'd', 'e']
+
+/[\D&&[:ascii:]&&\p{emoji}]/.character_set.size # => 2
 ```
 
-### Common utility sets
+### Predefined utility sets
+
+`ascii`, `ascii_alnum`, `ascii_letters`, `bmp`, `crypt`, `emoji`, `newline`, `unicode`, `url_fragment`, `url_host`, `url_path`, `url_query`, `whitespace`
 
 ```ruby
-CharacterSet.ascii
-CharacterSet.bmp
-CharacterSet.crypt
-CharacterSet.emoji
-CharacterSet.newline
-CharacterSet.unicode
-CharacterSet.url_fragment
-CharacterSet.url_host
-CharacterSet.url_path
-CharacterSet.url_query
-CharacterSet.whitespace
-
-# e.g.
-CharacterSet.url_query.cover?('?a=(b$c;)') # => true
-CharacterSet.emoji.sample(5) # => ["⛷", "👈", "🌞", "♑", "⛈"]
+CharacterSet.ascii # => #<CharacterSet (size: 128)>
 
 # all can be prefixed with `non_`, e.g.
-CharacterSet.non_ascii.delete_in(string)
+CharacterSet.non_ascii
 ```
 
 ### Interact with Strings
@@ -95,9 +89,12 @@ There is also a core extension for String interaction.
 require 'character_set/core_ext/string_ext'
 
 "a\rb".character_set & CharacterSet.newline # => CharacterSet["\r"]
-"a\rb".uses_character_set?(CharacterSet.emoji) # => false
+"a\rb".uses_character_set?(CharacterSet['ä', 'ö', 'ü']) # => false
 "a\rb".covered_by_character_set?(CharacterSet.newline) # => false
-"a\rb".delete_character_set(CharacterSet.newline) # => 'ab'
+
+# predefined sets can also be referenced via Symbols
+"a\rb".covered_by_character_set?(:ascii) # => true
+"a\rb".delete_character_set(:newline) # => 'ab'
 # etc.
 ```
 

@@ -1,7 +1,15 @@
 class CharacterSet
-  module CommonSets
+  module PredefinedSets
     def ascii
       @ascii ||= from_ranges(0..0x7F).freeze
+    end
+
+    def ascii_alnum
+      @ascii_alnum ||= from_ranges(0x30..0x39, 0x41..0x5A, 0x61..0x7A).freeze
+    end
+
+    def ascii_letters
+      @ascii_letters ||= from_ranges(0x41..0x5A, 0x61..0x7A).freeze
     end
 
     # basic multilingual plane

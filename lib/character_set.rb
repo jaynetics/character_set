@@ -1,7 +1,7 @@
 require 'character_set/character'
-require 'character_set/common_sets'
 require 'character_set/expression_converter'
 require 'character_set/parser'
+require 'character_set/predefined_sets'
 require 'character_set/set_method_adapters'
 require 'character_set/shared_methods'
 require 'character_set/version'
@@ -17,5 +17,5 @@ class CharacterSet
   prepend SetMethodAdapters
   include Enumerable
   include SharedMethods
-  extend CommonSets
+  extend PredefinedSets
 end

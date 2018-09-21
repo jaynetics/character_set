@@ -1,4 +1,4 @@
-require 'character_set/core_ext'
+require 'character_set/core_ext/string_ext'
 
 RSpec.describe 'CharacterSet String core extension' do
   describe 'String#character_set' do
@@ -8,51 +8,48 @@ RSpec.describe 'CharacterSet String core extension' do
     end
   end
 
-  describe 'String#covered_by_character_set?' do
-    it 'calls CharacterSet#cover?, passing self' do
+  shared_examples :string_ext_method do |string_method, set_method|
+    it "calls CharacterSet##{set_method} with self if given a CharacterSet" do
       set = CharacterSet.new
-      expect(set).to receive(:cover?).with('foo')
-      'foo'.covered_by_character_set?(set)
+      expect(set).to receive(set_method).with('foo')
+      'foo'.send(string_method, set)
     end
+
+    it 'uses the corresponding predefined set if given a Symbol' do
+      string = 'foo'
+      spy_set = instance_double(CharacterSet)
+      expect(CharacterSet).to receive(:my_spy_set).and_return(spy_set)
+      expect(spy_set).to receive(set_method).with(string)
+      string.send(string_method, :my_spy_set)
+    end
+
+    it 'raises if there is no predefined set matching the Symbol' do
+      expect { 'foo'.send(string_method, :fancy_set) }
+        .to raise_error(/undefined method `fancy_set' for CharacterSet/)
+    end
+  end
+
+  describe 'String#covered_by_character_set?' do
+    it_behaves_like :string_ext_method, :covered_by_character_set?, :cover?
   end
 
   describe 'String#uses_character_set?' do
-    it 'calls CharacterSet#used_by?, passing self' do
-      set = CharacterSet.new
-      expect(set).to receive(:used_by?).with('foo')
-      'foo'.uses_character_set?(set)
-    end
+    it_behaves_like :string_ext_method, :uses_character_set?, :used_by?
   end
 
   describe 'String#delete_character_set' do
-    it 'calls CharacterSet#delete_in, passing self' do
-      set = CharacterSet.new
-      expect(set).to receive(:delete_in).with('foo')
-      'foo'.delete_character_set(set)
-    end
+    it_behaves_like :string_ext_method, :delete_character_set, :delete_in
   end
 
   describe 'String#delete_character_set!' do
-    it 'calls CharacterSet#delete_in!, passing self' do
-      set = CharacterSet.new
-      expect(set).to receive(:delete_in!).with('foo')
-      'foo'.delete_character_set!(set)
-    end
+    it_behaves_like :string_ext_method, :delete_character_set!, :delete_in!
   end
 
   describe 'String#keep_character_set' do
-    it 'calls CharacterSet#keep_in, passing self' do
-      set = CharacterSet.new
-      expect(set).to receive(:keep_in).with('foo')
-      'foo'.keep_character_set(set)
-    end
+    it_behaves_like :string_ext_method, :keep_character_set, :keep_in
   end
 
   describe 'String#keep_character_set!' do
-    it 'calls CharacterSet#keep_in!, passing self' do
-      set = CharacterSet.new
-      expect(set).to receive(:keep_in!).with('foo')
-      'foo'.keep_character_set!(set)
-    end
+    it_behaves_like :string_ext_method, :keep_character_set!, :keep_in!
   end
 end

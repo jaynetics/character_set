@@ -28,7 +28,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'bundler', '~> 1.16'
   s.add_development_dependency 'rake', '~> 10.0'
   s.add_development_dependency 'rake-compiler', '~> 1.0'
-  s.add_development_dependency 'regexp_parser', '~> 1.0'
+  s.add_development_dependency 'regexp_parser', '~> 1.1.0'
   s.add_development_dependency 'regexp_property_values', '~> 0.3.2'
   s.add_development_dependency 'rspec', '~> 3.0'
 end

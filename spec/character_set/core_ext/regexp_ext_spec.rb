@@ -1,4 +1,4 @@
-require 'character_set/core_ext'
+require 'character_set/core_ext/regexp_ext'
 
 RSpec.describe 'CharacterSet Regexp core extension' do
   describe 'Regexp#character_set' do

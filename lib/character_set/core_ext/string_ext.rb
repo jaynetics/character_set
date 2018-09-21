@@ -5,28 +5,23 @@ class CharacterSet
         CharacterSet.of(self)
       end
 
-      def covered_by_character_set?(set)
-        set.cover?(self)
-      end
-
-      def uses_character_set?(set)
-        set.used_by?(self)
-      end
-
-      def delete_character_set(set)
-        set.delete_in(self)
-      end
-
-      def delete_character_set!(set)
-        set.delete_in!(self)
-      end
-
-      def keep_character_set(set)
-        set.keep_in(self)
-      end
-
-      def keep_character_set!(set)
-        set.keep_in!(self)
+      {
+        covered_by_character_set?: :cover?,
+        delete_character_set:      :delete_in,
+        delete_character_set!:     :delete_in!,
+        keep_character_set:        :keep_in,
+        keep_character_set!:       :keep_in!,
+        uses_character_set?:       :used_by?,
+      }.each do |string_method, set_method|
+        class_eval <<-RUBY, __FILE__, __LINE__ + 1
+          def #{string_method}(arg)
+            if arg.instance_of?(Symbol)
+              CharacterSet.__send__(arg).#{set_method}(self)
+            else
+              arg.#{set_method}(self)
+            end
+          end
+        RUBY
       end
     end
   end
