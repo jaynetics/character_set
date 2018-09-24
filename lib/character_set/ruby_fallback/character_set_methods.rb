@@ -31,7 +31,7 @@ class CharacterSet
       end
 
       def ranges
-        @range_compressor_required ||= require 'range_compressor'
+        CharacterSet.require_optional_dependency('range_compressor')
         RangeCompressor.compress(self)
       end
 

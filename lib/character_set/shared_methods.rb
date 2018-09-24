@@ -8,33 +8,55 @@ class CharacterSet
   module SharedMethods
     def self.included(klass)
       klass.class_eval <<-RUBY, __FILE__, __LINE__ + 1
-        def self.[](*args)
-          new(Array(args))
-        end
+        LoadError = Class.new(::LoadError)
 
-        def self.parse(string)
-          codepoints = Parser.codepoints_from_bracket_expression(string)
-          result = new(codepoints)
-          string.start_with?('[^') ? result.inversion : result
-        end
+        class << self
+          def [](*args)
+            new(Array(args))
+          end
 
-        def self.of_property(property_name)
-          @regexp_property_values_required ||= require 'regexp_property_values'
+          def parse(string)
+            codepoints = Parser.codepoints_from_bracket_expression(string)
+            result = new(codepoints)
+            string.start_with?('[^') ? result.inversion : result
+          end
 
-          property = RegexpPropertyValues[property_name.to_s]
-          from_ranges(*property.matched_ranges)
-        end
+          def of_property(property_name)
+            require_optional_dependency('regexp_property_values')
 
-        def self.of_regexp(regexp)
-          @regexp_parser_required ||= require 'regexp_parser'
+            property = RegexpPropertyValues[property_name.to_s]
+            from_ranges(*property.matched_ranges)
+          end
 
-          root = ::Regexp::Parser.parse(regexp)
-          of_expression(root)
-        end
+          def of_regexp(regexp)
+            require_optional_dependency('regexp_parser')
 
-        def self.of_expression(expression)
-          ExpressionConverter.convert(expression)
-        end
+            root = ::Regexp::Parser.parse(regexp)
+            of_expression(root)
+          end
+
+          def of_expression(expression)
+            ExpressionConverter.convert(expression)
+          end
+
+          def require_optional_dependency(name)
+            required_optional_dependencies[name] ||= begin
+              require name
+              true
+            rescue ::LoadError
+              entry_point = caller_locations.reverse.find do |loc|
+                loc.absolute_path.to_s.include?('/lib/character_set')
+              end
+              method = entry_point && entry_point.label
+              raise LoadError, 'You must the install the optional dependency '\
+                               "'\#{name}' to use the method `\#{method}'."
+            end
+          end
+
+          def required_optional_dependencies
+            @required_optional_dependencies ||= {}
+          end
+        end # class << self
 
         def initialize(enumerable = [])
           merge(Parser.codepoints_from_enumerable(enumerable))
@@ -150,6 +172,6 @@ class CharacterSet
           ext_inversion(include_surrogates, upto)
         end
       RUBY
-    end
-  end
+    end # self.included
+  end # SharedMethods
 end
