@@ -160,8 +160,6 @@ set.to_s(abbreviate: false) # => "abc\u0258\u{1F929}"
 set.to_s_with_surrogate_alternation # => '(?:[\u0258]|\ud83e\udd29)'
 ```
 
-Note: If you run JRuby or another Ruby without C support, you will also need to install [`range_compressor`](https://github.com/janosch-x/range_compressor) for these writing operations.
-
 ### Unicode plane methods
 
 There are some methods to check for planes and to handle [BMP](https://en.wikipedia.org/wiki/Plane_%28Unicode%29#Basic_Multilingual_Plane) and astral parts:

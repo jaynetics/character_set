@@ -16,6 +16,8 @@ namespace :java do
   java_gemspec.platform = 'java'
   java_gemspec.extensions = []
 
+  java_gemspec.add_runtime_dependency 'range_compressor', '~> 1.0'
+
   Gem::PackageTask.new(java_gemspec) do |pkg|
     pkg.need_zip = true
     pkg.need_tar = true
