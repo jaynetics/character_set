@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
   s.email         = ['janosch84@gmail.com']
 
   s.summary       = 'Build, read, write and compare sets of Unicode codepoints.'
-  s.homepage      = 'https://github.com/janosch-x/character_set'
+  s.homepage      = 'https://github.com/jaynetics/character_set'
   s.license       = 'MIT'
 
   s.files         = `git ls-files -z`.split("\x0").reject do |f|

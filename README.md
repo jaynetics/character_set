@@ -1,7 +1,7 @@
 # CharacterSet
 
 [![Gem Version](https://badge.fury.io/rb/character_set.svg)](http://badge.fury.io/rb/character_set)
-[![Build Status](https://travis-ci.org/janosch-x/character_set.svg?branch=master)](https://travis-ci.org/janosch-x/character_set)
+[![Build Status](https://travis-ci.org/jaynetics/character_set.svg?branch=master)](https://travis-ci.org/jaynetics/character_set)
 
 A gem to build, read, write and compare sets of Unicode codepoints.
 
@@ -9,7 +9,7 @@ Many parts can be used independently, e.g.:
 - `CharacterSet::Character`
 - `CharacterSet::Parser`
 - `CharacterSet::Writer`
-- [`RangeCompressor`](https://github.com/janosch-x/range_compressor)
+- [`RangeCompressor`](https://github.com/jaynetics/range_compressor)
 
 ## Usage
 
@@ -37,7 +37,7 @@ CharacterSet.parse('[a-c]')
 CharacterSet.parse('\U00000061-\U00000063')
 ```
 
-If the gems [`regexp_parser`](https://github.com/ammar/regexp_parser) and [`regexp_property_values`](https://github.com/janosch-x/regexp_property_values) are installed, `::of_regexp` and `::of_property` can also be used. `::of_regexp` can handle intersections, negations, and set nesting.
+If the gems [`regexp_parser`](https://github.com/ammar/regexp_parser) and [`regexp_property_values`](https://github.com/jaynetics/regexp_property_values) are installed, `::of_regexp` and `::of_property` can also be used. `::of_regexp` can handle intersections, negations, and set nesting.
 
 ```ruby
 CharacterSet.of_property('Thai') # => #<CharacterSet (size: 86)>
