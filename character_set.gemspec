@@ -23,7 +23,6 @@ Gem::Specification.new do |s|
   s.required_ruby_version = '>= 2.1.0'
 
   s.add_development_dependency 'benchmark-ips', '~> 2.7'
-  s.add_development_dependency 'bundler', '~> 2.0'
   s.add_development_dependency 'rake', '~> 12.0'
   s.add_development_dependency 'rake-compiler', '~> 1.0'
   s.add_development_dependency 'range_compressor', '~> 1.0'
