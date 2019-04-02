@@ -15,6 +15,7 @@
 .ruby-version
 .tags
 .tags1
+.vscode
 bbin/
 binstubs/*
 bundler_stubs/*/.yardoc
