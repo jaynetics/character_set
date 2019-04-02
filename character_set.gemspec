@@ -23,11 +23,11 @@ Gem::Specification.new do |s|
   s.required_ruby_version = '>= 2.1.0'
 
   s.add_development_dependency 'benchmark-ips', '~> 2.7'
-  s.add_development_dependency 'bundler', '~> 1.16'
+  s.add_development_dependency 'bundler', '~> 2.0'
   s.add_development_dependency 'rake', '~> 12.0'
   s.add_development_dependency 'rake-compiler', '~> 1.0'
   s.add_development_dependency 'range_compressor', '~> 1.0'
-  s.add_development_dependency 'regexp_parser', '~> 1.1'
-  s.add_development_dependency 'regexp_property_values', '~> 0.3.4'
+  s.add_development_dependency 'regexp_parser', '~> 1.3'
+  s.add_development_dependency 'regexp_property_values', '~> 0.3.5'
   s.add_development_dependency 'rspec', '~> 3.8'
 end
