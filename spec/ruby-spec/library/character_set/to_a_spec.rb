@@ -1,6 +1,3 @@
-require_relative '../../../spec_helper'
-require 'set'
-
 describe "CharacterSet#to_a" do
   it "returns an array containing elements" do
     set = CharacterSet.new [1, 2, 3]

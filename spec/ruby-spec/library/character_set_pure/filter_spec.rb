@@ -1,9 +1,7 @@
-require_relative '../../../spec_helper'
-require_relative 'shared/select'
-require 'set'
+require_relative '../shared/select'
 
 ruby_version_is "2.6" do
   describe "CharacterSet::Pure#filter!" do
-    it_behaves_like :sorted_set_1_select_bang, :filter!
+    it_behaves_like :sorted_set_select_bang, CharacterSet::Pure, :filter!
   end
 end

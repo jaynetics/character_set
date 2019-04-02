@@ -1,6 +1,3 @@
-require_relative '../../../spec_helper'
-require 'set'
-
 describe "CharacterSet::Pure#==" do
   it "returns true when the passed Object is a CharacterSet::Pure and self and the Object contain the same elements" do
     CharacterSet::Pure[].should == CharacterSet::Pure[]

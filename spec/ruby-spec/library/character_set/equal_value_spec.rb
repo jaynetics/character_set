@@ -1,6 +1,3 @@
-require_relative '../../../spec_helper'
-require 'set'
-
 describe "CharacterSet#==" do
   it "returns true when the passed Object is a CharacterSet and self and the Object contain the same elements" do
     CharacterSet[].should == CharacterSet[]

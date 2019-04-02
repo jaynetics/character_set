@@ -1,11 +1,11 @@
-shared_examples :sorted_set_0_collect_bang do |method|
+shared_examples :sorted_set_collect_bang do |variant, method|
   before :each do
-    @set = CharacterSet[1, 2, 3, 4, 5]
+    @set = variant[1, 2, 3, 4, 5]
   end
 
   it "yields each Object in self in sorted order" do
     res = []
-    CharacterSet[1, 2, 3].send(method) { |x| res << x; x }
+    variant[1, 2, 3].send(method) { |x| res << x; x }
     res.should == [1, 2, 3].sort
   end
 
@@ -15,6 +15,6 @@ shared_examples :sorted_set_0_collect_bang do |method|
 
   it "replaces self with the return values of the block" do
     @set.send(method) { |x| x * 2 }
-    @set.should == CharacterSet[2, 4, 6, 8, 10]
+    @set.should == variant[2, 4, 6, 8, 10]
   end
 end

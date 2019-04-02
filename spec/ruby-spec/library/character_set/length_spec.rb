@@ -1,7 +1,5 @@
-require_relative '../../../spec_helper'
-require_relative 'shared/length'
-require 'set'
+require_relative '../shared/length'
 
 describe "CharacterSet#length" do
-  it_behaves_like :sorted_set_0_length, :length
+  it_behaves_like :sorted_set_length, CharacterSet, :length
 end

@@ -1,6 +1,3 @@
-require_relative '../../../spec_helper'
-require 'set'
-
 describe "CharacterSet#hash" do
   it "is static" do
     CharacterSet[].hash.should == CharacterSet[].hash

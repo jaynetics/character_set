@@ -1,6 +1,3 @@
-require_relative '../../../spec_helper'
-require 'set'
-
 describe "CharacterSet::Pure#each" do
   before :each do
     @set = CharacterSet::Pure[1, 2, 3]

@@ -1,6 +1,3 @@
-require_relative '../../../spec_helper'
-require 'set'
-
 describe "CharacterSet#subset?" do
   before :each do
     @set = CharacterSet[1, 2, 3, 4]

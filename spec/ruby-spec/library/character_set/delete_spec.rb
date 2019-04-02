@@ -1,6 +1,3 @@
-require_relative '../../../spec_helper'
-require 'set'
-
 describe "CharacterSet#delete" do
   before :each do
     @set = CharacterSet["a", "b", "c"]

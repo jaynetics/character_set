@@ -1,6 +1,6 @@
-shared_examples :sorted_set_1_add do |method|
+shared_examples :sorted_set_add do |variant, method|
   before :each do
-    @set = CharacterSet::Pure.new
+    @set = variant.new
   end
 
   it "adds the passed Object to self" do

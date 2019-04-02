@@ -1,7 +1,5 @@
-require_relative '../../../spec_helper'
-require_relative 'shared/union'
-require 'set'
+require_relative '../shared/union'
 
 describe "CharacterSet::Pure#+" do
-  it_behaves_like :sorted_set_1_union, :+
+  it_behaves_like :sorted_set_union, CharacterSet::Pure, :+
 end

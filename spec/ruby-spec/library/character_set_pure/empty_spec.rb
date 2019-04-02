@@ -1,6 +1,3 @@
-require_relative '../../../spec_helper'
-require 'set'
-
 describe "CharacterSet::Pure#empty?" do
   it "returns true if self is empty" do
     CharacterSet::Pure[].empty?.should be true

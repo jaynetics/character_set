@@ -1,9 +1,6 @@
-require_relative '../../../../spec_helper'
-require 'set'
-
-shared_examples :sorted_set_1_select_bang do |method|
+shared_examples :sorted_set_select_bang do |variant, method|
   before :each do
-    @set = CharacterSet::Pure[1, 2, 3]
+    @set = variant[1, 2, 3]
   end
 
   it "yields each Object in self in sorted order" do

@@ -1,6 +1,3 @@
-require_relative '../../../spec_helper'
-require 'set'
-
 describe "CharacterSet::Pure[]" do
   it "returns a new CharacterSet::Pure populated with the passed Objects" do
     set = CharacterSet::Pure[1, 2, 3]

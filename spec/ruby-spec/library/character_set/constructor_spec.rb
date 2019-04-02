@@ -1,6 +1,3 @@
-require_relative '../../../spec_helper'
-require 'set'
-
 describe "CharacterSet[]" do
   it "returns a new CharacterSet populated with the passed Objects" do
     set = CharacterSet[1, 2, 3]

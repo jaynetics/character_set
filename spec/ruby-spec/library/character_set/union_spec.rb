@@ -1,11 +1,9 @@
-require_relative '../../../spec_helper'
-require_relative 'shared/union'
-require 'set'
+require_relative '../shared/union'
 
 describe "CharacterSet#union" do
-  it_behaves_like :sorted_set_0_union, :union
+  it_behaves_like :sorted_set_union, CharacterSet, :union
 end
 
 describe "CharacterSet#|" do
-  it_behaves_like :sorted_set_0_union, :|
+  it_behaves_like :sorted_set_union, CharacterSet, :|
 end

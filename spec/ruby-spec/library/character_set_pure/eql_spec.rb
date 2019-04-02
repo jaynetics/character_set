@@ -1,6 +1,3 @@
-require_relative '../../../spec_helper'
-require 'set'
-
 describe "CharacterSet::Pure#eql?" do
   it "returns true when the passed argument is a CharacterSet::Pure and contains the same elements" do
     CharacterSet::Pure[].should eql(CharacterSet::Pure[])

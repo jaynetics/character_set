@@ -1,7 +1,5 @@
-require_relative '../../../spec_helper'
-require_relative 'shared/include'
-require 'set'
+require_relative '../shared/include'
 
 describe "CharacterSet::Pure#member?" do
-  it_behaves_like :sorted_set_1_include, :member?
+  it_behaves_like :sorted_set_include, CharacterSet::Pure, :member?
 end

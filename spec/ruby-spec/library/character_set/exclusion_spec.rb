@@ -1,12 +1,9 @@
-require_relative '../../../spec_helper'
-require 'set'
-
 describe "CharacterSet#^" do
   before :each do
     @set = CharacterSet[1, 2, 3, 4]
   end
 
-  it "returns a new CharacterSet containing elements that are not in both self and the passed Enumberable" do
+  it "returns a new CharacterSet containing elements that are not in both self and the passed Enumerable" do
     (@set ^ CharacterSet[3, 4, 5]).should == CharacterSet[1, 2, 5]
     (@set ^ [3, 4, 5]).should == CharacterSet[1, 2, 5]
   end

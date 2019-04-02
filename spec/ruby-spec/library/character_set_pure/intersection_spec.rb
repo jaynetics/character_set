@@ -1,11 +1,9 @@
-require_relative '../../../spec_helper'
-require_relative 'shared/intersection'
-require 'set'
+require_relative '../shared/intersection'
 
 describe "CharacterSet::Pure#intersection" do
-  it_behaves_like :sorted_set_1_intersection, :intersection
+  it_behaves_like :sorted_set_intersection, CharacterSet::Pure, :intersection
 end
 
 describe "CharacterSet::Pure#&" do
-  it_behaves_like :sorted_set_1_intersection, :&
+  it_behaves_like :sorted_set_intersection, CharacterSet::Pure, :&
 end

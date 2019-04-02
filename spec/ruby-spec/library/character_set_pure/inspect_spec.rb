@@ -1,6 +1,3 @@
-require_relative '../../../spec_helper'
-require 'set'
-
 describe "CharacterSet::Pure#inspect" do
   it "returns a String representation of self" do
     CharacterSet::Pure[].inspect.should be_kind_of(String)

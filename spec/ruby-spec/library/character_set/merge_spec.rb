@@ -1,6 +1,3 @@
-require_relative '../../../spec_helper'
-require 'set'
-
 describe "CharacterSet#merge" do
   it "adds the elements of the passed Enumerable to self" do
     CharacterSet["a", "b"].merge(CharacterSet["b", "c", "d"]).should == CharacterSet["a", "b", "c", "d"]
