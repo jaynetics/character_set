@@ -1,4 +1,4 @@
-RSpec.describe CharacterSet::Parser do
+describe CharacterSet::Parser do
   describe '::codepoints_from_enumerable' do
     def result(arg)
       CharacterSet::Parser.codepoints_from_enumerable(arg).to_a

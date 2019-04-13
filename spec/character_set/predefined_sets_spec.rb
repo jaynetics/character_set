@@ -1,4 +1,4 @@
-RSpec.describe CharacterSet::PredefinedSets do
+describe CharacterSet::PredefinedSets do
   shared_examples :predefined_character_set do |name|
     it 'is frozen' do
       expect(CharacterSet.send(name)).to be_frozen

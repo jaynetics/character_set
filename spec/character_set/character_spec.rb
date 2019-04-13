@@ -1,4 +1,4 @@
-RSpec.describe CharacterSet::Character do
+describe CharacterSet::Character do
   Character = described_class
 
   describe '#initialize' do

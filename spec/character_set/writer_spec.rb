@@ -1,4 +1,4 @@
-RSpec.describe CharacterSet::Writer do
+describe CharacterSet::Writer do
   Writer = described_class
 
   describe '::write' do

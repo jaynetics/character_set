@@ -1,6 +1,6 @@
 require 'regexp_parser'
 
-RSpec.describe CharacterSet::ExpressionConverter do
+describe CharacterSet::ExpressionConverter do
   describe '::convert' do
     def result(arg, test_root = false)
       exp = Regexp::Parser.parse(arg)
