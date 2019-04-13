@@ -18,6 +18,15 @@ shared_examples :character_set_delete_in do |variant|
     expect(variant[0x1F60B].delete_in("a\u{1F60B}c")).to eq "ac"
   end
 
+  TESTED_ENCODINGS.each do |enc|
+    it "works with #{enc} strings, keeping the original encoding" do
+      str = 'abz'.encode(enc)
+      result = variant[97, 98, 99].delete_in(str)
+      expect(result.encoding).to eq enc
+      expect(result).to eq 'z'.encode(enc)
+    end
+  end
+
   it 'preserves the taintedness of the original string' do
     tainted_string = 'bar'.taint
     untainted_string = 'bar'
