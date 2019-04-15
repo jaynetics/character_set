@@ -2,8 +2,7 @@ require 'bundler/setup'
 require 'character_set'
 require 'character_set/pure'
 
-require_relative 'support/ruby_version_is'
-require_relative 'support/tested_encodings'
+Dir[File.join(__dir__, 'support', '*.rb')].each { |file| require file }
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure

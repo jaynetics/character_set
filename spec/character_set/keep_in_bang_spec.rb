@@ -39,6 +39,14 @@ shared_examples :character_set_keep_in_bang do |variant|
     expect { variant[].keep_in!(1) }.to raise_error(ArgumentError)
     expect { variant[].keep_in!(Object.new) }.to raise_error(ArgumentError)
   end
+
+  it 'raises ArgumentError for broken strings' do
+    expect { variant[].keep_in!("a\xC1\x80b") }.to raise_error(ArgumentError)
+  end
+
+  it 'raises FrozenError if passed a frozen String' do
+    expect { variant[97].keep_in!('abc'.freeze) }.to raise_error(FrozenError)
+  end
 end
 
 describe "CharacterSet#keep_in!" do

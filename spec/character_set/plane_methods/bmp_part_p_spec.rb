@@ -7,10 +7,10 @@ shared_examples :character_set_bmp_part_p do |variant|
   end
 end
 
-describe "CharacterSet#bmp_part_p" do
+describe "CharacterSet#bmp_part?" do
   it_behaves_like :character_set_bmp_part_p, CharacterSet
 end
 
-describe "CharacterSet::Pure#bmp_part_p" do
+describe "CharacterSet::Pure#bmp_part?" do
   it_behaves_like :character_set_bmp_part_p, CharacterSet::Pure
 end

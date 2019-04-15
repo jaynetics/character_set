@@ -7,10 +7,10 @@ shared_examples :character_set_astral_part_p do |variant|
   end
 end
 
-describe "CharacterSet#astral_part_p" do
+describe "CharacterSet#astral_part?" do
   it_behaves_like :character_set_astral_part_p, CharacterSet
 end
 
-describe "CharacterSet::Pure#astral_part_p" do
+describe "CharacterSet::Pure#astral_part?" do
   it_behaves_like :character_set_astral_part_p, CharacterSet::Pure
 end
