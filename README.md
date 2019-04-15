@@ -3,7 +3,9 @@
 [![Gem Version](https://badge.fury.io/rb/character_set.svg)](http://badge.fury.io/rb/character_set)
 [![Build Status](https://travis-ci.org/jaynetics/character_set.svg?branch=master)](https://travis-ci.org/jaynetics/character_set)
 
-A gem to build, read, write and compare sets of Unicode codepoints.
+This is a C-extended Ruby gem to build, read, write and compare sets of Unicode codepoints.
+
+It can also replace some `Regexp` actions on `String` instances, offering much better speed (see [benchmarks](./BENCHMARK.md)).
 
 Many parts can be used independently, e.g.:
 - `CharacterSet::Character`
@@ -59,8 +61,6 @@ CharacterSet.non_ascii
 ```
 
 ### Interact with Strings
-
-CharacterSet can replace some `Regexp` actions on Strings, at better speed (see [benchmarks](./BENCHMARK.md)).
 
 `#used_by?` and `#cover?` can replace some `Regexp#match?` calls:
 

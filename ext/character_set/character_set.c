@@ -855,12 +855,49 @@ method_cover_p(VALUE self, VALUE str)
   return each_cp(str, str_cp_in_arr, cps);
 }
 
+static void
+cset_str_buf_cat(VALUE str, const char *ptr, long len)
+{
+  long total, olen;
+  char *sptr;
+
+  RSTRING_GETMEM(str, sptr, olen);
+  sptr = RSTRING(str)->as.heap.ptr;
+  olen = RSTRING(str)->as.heap.len;
+  total = olen + len;
+  memcpy(sptr + olen, ptr, len);
+  RSTRING(str)->as.heap.len = total;
+}
+
+#ifndef TERM_FILL
+#define TERM_FILL(ptr, termlen)                     \
+  do                                                \
+  {                                                 \
+    char *const term_fill_ptr = (ptr);              \
+    const int term_fill_len = (termlen);            \
+    *term_fill_ptr = '\0';                          \
+    if (__builtin_expect(!!(term_fill_len > 1), 0)) \
+      memset(term_fill_ptr, 0, term_fill_len);      \
+  } while (0)
+#endif
+
+static void
+cset_str_buf_terminate(VALUE str, rb_encoding *enc)
+{
+  char *ptr;
+  long len;
+
+  ptr = RSTRING(str)->as.heap.ptr;
+  len = RSTRING(str)->as.heap.len;
+  TERM_FILL(ptr + len, rb_enc_mbminlen(enc));
+}
+
 static inline VALUE
 apply_to_str(VALUE set, VALUE str, int delete, int bang)
 {
   cp_byte *cps;
   rb_encoding *str_enc;
-  VALUE orig_len, blen, new_str_buf, chr;
+  VALUE orig_len, new_str_buf;
   int cp_len;
   unsigned int str_cp;
   const char *ptr, *end;
@@ -870,10 +907,19 @@ apply_to_str(VALUE set, VALUE str, int delete, int bang)
   cps = fetch_cps(set);
 
   orig_len = RSTRING_LEN(str);
-  blen = orig_len + 30; /* len + margin */ // not sure why, copied from string.c
-  new_str_buf = rb_str_buf_new(blen);
+  if (orig_len < 1) // empty string, will never change
+  {
+    if (bang)
+    {
+      return Qnil;
+    }
+    return rb_str_dup(str);
+  }
+
+  new_str_buf = rb_str_buf_new(orig_len);
   str_enc = rb_enc_get(str);
   rb_enc_associate(new_str_buf, str_enc);
+  rb_str_modify(new_str_buf);
   ENC_CODERANGE_SET(new_str_buf, rb_enc_asciicompat(str_enc) ? ENC_CODERANGE_7BIT : ENC_CODERANGE_VALID);
 
   ptr = RSTRING_PTR(str);
@@ -886,7 +932,7 @@ apply_to_str(VALUE set, VALUE str, int delete, int bang)
       str_cp = *ptr & 0xff;
       if ((!TSTBIT(cps, str_cp)) == delete)
       {
-        rb_enc_str_buf_cat(new_str_buf, ptr, 1, str_enc);
+        cset_str_buf_cat(new_str_buf, ptr, 1);
       }
       ptr++;
     }
@@ -898,12 +944,13 @@ apply_to_str(VALUE set, VALUE str, int delete, int bang)
       str_cp = rb_enc_codepoint_len(ptr, end, &cp_len, str_enc);
       if ((!TSTBIT(cps, str_cp)) == delete)
       {
-        chr = rb_enc_uint_chr(str_cp, str_enc);
-        rb_enc_str_buf_cat(new_str_buf, RSTRING_PTR(chr), cp_len, str_enc);
+        cset_str_buf_cat(new_str_buf, ptr, cp_len);
       }
       ptr += cp_len;
     }
   }
+
+  cset_str_buf_terminate(new_str_buf, str_enc);
 
   if (bang)
   {

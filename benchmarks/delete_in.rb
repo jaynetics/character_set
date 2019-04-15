@@ -14,7 +14,7 @@ benchmark(
 
 str = 'Lörem ipsüm ⛷ et dölörem'
 rx = /[\s\p{emoji}äüö]/
-cs = CharacterSet.whitespace + CharacterSet.emoji + CS['ä', 'ü', 'ö']
+cs = CharacterSet.whitespace + CharacterSet.emoji + CharacterSet['ä', 'ö', 'ü']
 
 benchmark(
   caption: 'Removing whitespace, emoji and umlauts',

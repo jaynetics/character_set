@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## UNRELEASED
 
+### Added
+- improved `String` manipulation speed
+
 ### Fixed
 - `CharacterSet::Pure#keep_in`, `#delete_in` now preserve the original encoding
 
