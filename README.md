@@ -51,7 +51,7 @@ require 'character_set/core_ext/regexp_ext'
 
 ### Predefined utility sets
 
-`ascii`, `ascii_alnum`, `ascii_letter`, `bmp`, `crypt`, `emoji`, `newline`, `surrogate`, `unicode`, `url_fragment`, `url_host`, `url_path`, `url_query`, `whitespace`
+`ascii`, `ascii_alnum`, `ascii_letter`, `assigned`, `bmp`, `crypt`, `emoji`, `newline`, `surrogate`, `unicode`, `url_fragment`, `url_host`, `url_path`, `url_query`, `whitespace`
 
 ```ruby
 CharacterSet.ascii # => #<CharacterSet (size: 128)>

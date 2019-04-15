@@ -114,6 +114,16 @@ task :sync_casefold_data do
   File.unlink(src_path)
 end
 
+desc 'Update codepoint data for predefined sets, based on Onigmo'
+task :sync_predefined_sets do
+  %w[assigned emoji whitespace].each do |prop|
+    require 'regexp_property_values'
+    ranges = RegexpPropertyValues[prop].matched_ranges
+    str = ranges.map { |r| r.minmax.map { |n| n.to_s(16) }.join(',').upcase + "\n" }.join
+    File.write("./lib/character_set/predefined_sets/#{prop}.cps", str, mode: 'w')
+  end
+end
+
 desc 'Run all IPS benchmarks'
 task :benchmark do
   Dir['./benchmarks/*.rb'].sort.each { |file| require file }
