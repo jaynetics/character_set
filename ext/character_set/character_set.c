@@ -14,16 +14,26 @@ typedef unsigned long cp_index;
 #define UNICODE_CP_COUNT (UNICODE_PLANE_SIZE * UNICODE_PLANE_COUNT)
 #define UNICODE_TOTAL_BYTES (UNICODE_CP_COUNT / 8)
 
-static void
-free_character_set(void *codepoints)
+#define CPS_MEMSIZE (sizeof(cp_byte) * UNICODE_TOTAL_BYTES)
+
+struct character_set_data
 {
-  free(codepoints);
+  cp_byte *cps;
+};
+
+static void
+free_character_set(void *ptr)
+{
+  struct character_set_data *data = ptr;
+  ruby_xfree(data->cps);
+  ruby_xfree(data);
 }
 
 static size_t
-memsize_character_set(const void *codepoints)
+memsize_character_set(const void *ptr)
 {
-  return sizeof(cp_byte) * UNICODE_TOTAL_BYTES;
+  const struct character_set_data *data = ptr;
+  return sizeof(*data) + CPS_MEMSIZE;
 }
 
 static const rb_data_type_t character_set_type = {
@@ -37,24 +47,43 @@ static const rb_data_type_t character_set_type = {
     .flags = RUBY_TYPED_FREE_IMMEDIATELY,
 };
 
-#define FETCH_CODEPOINTS(set, cps) \
-  TypedData_Get_Struct(set, cp_byte, &character_set_type, cps)
+static inline VALUE
+alloc_cset(VALUE klass, cp_byte *cps)
+{
+  VALUE set;
+  struct character_set_data *data;
+  set = TypedData_Make_Struct(klass, struct character_set_data, &character_set_type, data);
+  data->cps = cps;
+  return set;
+}
 
-#define NEW_CHARACTER_SET(klass, cps) \
-  TypedData_Wrap_Struct(klass, &character_set_type, cps)
+static inline cp_byte *
+fetch_cps(VALUE set)
+{
+  struct character_set_data *data;
+  TypedData_Get_Struct(set, struct character_set_data, &character_set_type, data);
+  return data->cps;
+}
+
+static inline cp_byte *
+alloc_cps()
+{
+  cp_byte *cps;
+  cps = ruby_xmalloc(CPS_MEMSIZE);
+  memset(cps, 0, CPS_MEMSIZE);
+  return cps;
+}
 
 static VALUE
 method_allocate(VALUE self)
 {
-  cp_byte *cp_arr;
-  cp_arr = calloc(UNICODE_TOTAL_BYTES, sizeof(cp_byte));
-  return NEW_CHARACTER_SET(self, cp_arr);
+  return alloc_cset(self, alloc_cps());
 }
 
 #define FOR_EACH_ACTIVE_CODEPOINT(action)   \
   cp_index cp;                              \
   cp_byte *cps;                             \
-  FETCH_CODEPOINTS(self, cps);              \
+  cps = fetch_cps(self);                    \
   for (cp = 0; cp < UNICODE_CP_COUNT; cp++) \
   {                                         \
     if (TSTBIT(cps, cp))                    \
@@ -125,7 +154,7 @@ method_hash(VALUE self)
 {
   cp_index cp, hash, four_byte_value;
   cp_byte *cps;
-  FETCH_CODEPOINTS(self, cps);
+  cps = fetch_cps(self);
 
   hash = 17;
   for (cp = 0; cp < UNICODE_CP_COUNT; cp++)
@@ -179,7 +208,7 @@ method_clear(VALUE self)
   cp_index cp;
   cp_byte *cps;
   rb_check_frozen(self);
-  FETCH_CODEPOINTS(self, cps);
+  cps = fetch_cps(self);
   for (cp = 0; cp < UNICODE_CP_COUNT; cp++)
   {
     CLRBIT(cps, cp);
@@ -187,23 +216,23 @@ method_clear(VALUE self)
   return self;
 }
 
-#define RETURN_NEW_SET_BASED_ON(condition)                \
-  cp_index cp;                                            \
-  cp_byte *a, *b, *new_cps;                               \
-  FETCH_CODEPOINTS(self, a);                              \
-  if (other)                                              \
-  {                                                       \
-    FETCH_CODEPOINTS(other, b);                           \
-  }                                                       \
-  new_cps = calloc(UNICODE_TOTAL_BYTES, sizeof(cp_byte)); \
-  for (cp = 0; cp < UNICODE_CP_COUNT; cp++)               \
-  {                                                       \
-    if (condition)                                        \
-    {                                                     \
-      SETBIT(new_cps, cp);                                \
-    }                                                     \
-  }                                                       \
-  return NEW_CHARACTER_SET(RBASIC(self)->klass, new_cps);
+#define RETURN_NEW_SET_BASED_ON(condition)  \
+  cp_index cp;                              \
+  cp_byte *a, *b, *new_cps;                 \
+  a = fetch_cps(self);                      \
+  if (other)                                \
+  {                                         \
+    b = fetch_cps(other);                   \
+  }                                         \
+  new_cps = alloc_cps();                    \
+  for (cp = 0; cp < UNICODE_CP_COUNT; cp++) \
+  {                                         \
+    if (condition)                          \
+    {                                       \
+      SETBIT(new_cps, cp);                  \
+    }                                       \
+  }                                         \
+  return alloc_cset(RBASIC(self)->klass, new_cps);
 
 static VALUE
 method_intersection(VALUE self, VALUE other)
@@ -233,7 +262,7 @@ static VALUE
 method_include_p(VALUE self, VALUE num)
 {
   cp_byte *cps;
-  FETCH_CODEPOINTS(self, cps);
+  cps = fetch_cps(self);
   return (TSTBIT(cps, FIX2ULONG(num)) ? Qtrue : Qfalse);
 }
 
@@ -243,7 +272,7 @@ toggle_codepoint(VALUE set, VALUE cp_num, unsigned int on, int check_if_noop)
   cp_index cp;
   cp_byte *cps;
   rb_check_frozen(set);
-  FETCH_CODEPOINTS(set, cps);
+  cps = fetch_cps(set);
   cp = FIX2ULONG(cp_num);
   if (check_if_noop && (!TSTBIT(cps, cp) == !on))
   {
@@ -290,8 +319,8 @@ method_delete_p(VALUE self, VALUE cp_num)
 #define COMPARE_SETS(action)                \
   cp_index cp;                              \
   cp_byte *cps, *other_cps;                 \
-  FETCH_CODEPOINTS(self, cps);              \
-  FETCH_CODEPOINTS(other, other_cps);       \
+  cps = fetch_cps(self);                    \
+  other_cps = fetch_cps(other);             \
   for (cp = 0; cp < UNICODE_CP_COUNT; cp++) \
   {                                         \
     action;                                 \
@@ -357,7 +386,7 @@ merge_rb_range(VALUE self, VALUE rb_range)
   int excl;
   cp_index cp;
   cp_byte *cps;
-  FETCH_CODEPOINTS(self, cps);
+  cps = fetch_cps(self);
 
   if (!RTEST(rb_range_values(rb_range, &from_id, &upto_id, &excl)))
   {
@@ -385,7 +414,7 @@ merge_rb_array(VALUE self, VALUE rb_array)
   VALUE el;
   cp_byte *cps;
   VALUE array_length, i;
-  FETCH_CODEPOINTS(self, cps);
+  cps = fetch_cps(self);
   Check_Type(rb_array, T_ARRAY);
   array_length = RARRAY_LEN(rb_array);
   for (i = 0; i < array_length; i++)
@@ -438,8 +467,8 @@ a_subset_of_b(VALUE set_a, VALUE set_b, int *is_proper)
     rb_raise(rb_eArgError, "pass a CharacterSet");
   }
 
-  FETCH_CODEPOINTS(set_a, cps_a);
-  FETCH_CODEPOINTS(set_b, cps_b);
+  cps_a = fetch_cps(set_a);
+  cps_b = fetch_cps(set_b);
 
   *is_proper = 0;
   size_a = 0;
@@ -563,8 +592,8 @@ new_set_from_section(VALUE set, cp_index from, cp_index upto)
 {
   cp_byte *cps, *new_cps;
   cp_index cp;
-  FETCH_CODEPOINTS(set, cps);
-  new_cps = calloc(UNICODE_TOTAL_BYTES, sizeof(cp_byte));
+  cps = fetch_cps(set);
+  new_cps = alloc_cps();
   for (cp = from; cp <= upto; cp++)
   {
     if (TSTBIT(cps, cp))
@@ -572,7 +601,7 @@ new_set_from_section(VALUE set, cp_index from, cp_index upto)
       SETBIT(new_cps, cp);
     }
   }
-  return NEW_CHARACTER_SET(RBASIC(set)->klass, new_cps);
+  return alloc_cset(RBASIC(set)->klass, new_cps);
 }
 
 static VALUE
@@ -592,7 +621,7 @@ set_has_member_in_plane(VALUE set, unsigned int plane)
 {
   cp_byte *cps;
   cp_index cp, max_cp;
-  FETCH_CODEPOINTS(set, cps);
+  cps = fetch_cps(set);
   cp = plane * UNICODE_PLANE_SIZE;
   max_cp = (plane + 1) * UNICODE_PLANE_SIZE - 1;
   for (/* */; cp <= max_cp; cp++)
@@ -670,7 +699,7 @@ method_case_insensitive(VALUE self)
   cp_index i;
   cp_byte *new_cps;
 
-  new_cps = calloc(UNICODE_TOTAL_BYTES, sizeof(cp_byte));
+  new_cps = alloc_cps();
 
   FOR_EACH_ACTIVE_CODEPOINT(SETBIT(new_cps, cp));
 
@@ -688,7 +717,7 @@ method_case_insensitive(VALUE self)
     }
   }
 
-  return NEW_CHARACTER_SET(RBASIC(self)->klass, new_cps);
+  return alloc_cset(RBASIC(self)->klass, new_cps);
 
   // OnigCaseFoldType flags;
   // rb_encoding *enc;
@@ -789,9 +818,9 @@ class_method_of(VALUE self, VALUE str)
 {
   cp_byte *cp_arr;
   raise_arg_err_unless_string(str);
-  cp_arr = calloc(UNICODE_TOTAL_BYTES, sizeof(cp_byte));
+  cp_arr = alloc_cps();
   each_cp(str, add_str_cp_to_arr, cp_arr);
-  return NEW_CHARACTER_SET(self, cp_arr);
+  return alloc_cset(self, cp_arr);
 }
 
 static inline int
@@ -806,7 +835,7 @@ method_used_by_p(VALUE self, VALUE str)
   cp_byte *cps;
   VALUE only_uses_other_cps;
   raise_arg_err_unless_string(str);
-  FETCH_CODEPOINTS(self, cps);
+  cps = fetch_cps(self);
   only_uses_other_cps = each_cp(str, str_cp_not_in_arr, cps);
   return only_uses_other_cps == Qfalse ? Qtrue : Qfalse;
 }
@@ -822,7 +851,7 @@ method_cover_p(VALUE self, VALUE str)
 {
   cp_byte *cps;
   raise_arg_err_unless_string(str);
-  FETCH_CODEPOINTS(self, cps);
+  cps = fetch_cps(self);
   return each_cp(str, str_cp_in_arr, cps);
 }
 
@@ -838,7 +867,7 @@ apply_to_str(VALUE set, VALUE str, int delete, int bang)
 
   raise_arg_err_unless_string(str);
 
-  FETCH_CODEPOINTS(set, cps);
+  cps = fetch_cps(set);
 
   orig_len = RSTRING_LEN(str);
   blen = orig_len + 30; /* len + margin */ // not sure why, copied from string.c
