@@ -14,8 +14,11 @@ class CharacterSet
       RUBY
     end
 
+    alias ascii_letters            ascii_letter
     alias basic_multilingual_plane bmp
-    alias blank whitespace
+    alias blank                    whitespace
+    alias invalid                  surrogate
+    alias valid                    unicode
 
     def build_from_cps_file(path)
       File.readlines(path).inject(new) do |set, line|

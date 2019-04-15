@@ -51,7 +51,7 @@ require 'character_set/core_ext/regexp_ext'
 
 ### Predefined utility sets
 
-`ascii`, `ascii_alnum`, `ascii_letters`, `bmp`, `crypt`, `emoji`, `newline`, `unicode`, `url_fragment`, `url_host`, `url_path`, `url_query`, `whitespace`
+`ascii`, `ascii_alnum`, `ascii_letter`, `bmp`, `crypt`, `emoji`, `newline`, `surrogate`, `unicode`, `url_fragment`, `url_host`, `url_path`, `url_query`, `whitespace`
 
 ```ruby
 CharacterSet.ascii # => #<CharacterSet (size: 128)>
@@ -71,6 +71,7 @@ CharacterSet.ascii.cover?('Tr') # => true
 ```
 
 `#delete_in(!)` and `#keep_in(!)` can replace `String#gsub(!)` and the like:
+
 ```ruby
 string = 'Tüür'
 
@@ -115,14 +116,14 @@ CharacterSet['a'].include?(0x61) # => true
 
 ```ruby
 non_a = CharacterSet['a'].inversion
-# => #<CharacterSet (size: 1112063)>
+# => #<CharacterSet (size: 1112064)>
 
 non_a.include?('a') # => false
 non_a.include?('ü') # => true
 
 # surrogate pair halves are not included by default
 CharacterSet['a'].inversion(include_surrogates: true)
-# => #<CharacterSet (size: 1114111)>
+# => #<CharacterSet (size: 1114112)>
 ```
 
 `#case_insensitive` can be used to create a `CharacterSet` where upper/lower case codepoints are supplemented:
