@@ -39,16 +39,16 @@ describe CharacterSet::PredefinedSets do
     it_behaves_like :predefined_character_set, :ascii_alnum
   end
 
-  describe '::ascii_letters' do
+  describe '::ascii_letter' do
     it 'includes all ASCII letters' do
-      expect(CharacterSet.ascii_letters.size).to eq 52
-      expect(CharacterSet.ascii_letters).to include 'a'
-      expect(CharacterSet.ascii_letters.include?('1')).to be false
-      expect(CharacterSet.ascii_letters.include?('.')).to be false
-      expect(CharacterSet.ascii_letters.include?('ü')).to be false
+      expect(CharacterSet.ascii_letter.size).to eq 52
+      expect(CharacterSet.ascii_letter).to include 'a'
+      expect(CharacterSet.ascii_letter.include?('1')).to be false
+      expect(CharacterSet.ascii_letter.include?('.')).to be false
+      expect(CharacterSet.ascii_letter.include?('ü')).to be false
     end
 
-    it_behaves_like :predefined_character_set, :ascii_letters
+    it_behaves_like :predefined_character_set, :ascii_letter
   end
 
   describe '::bmp' do

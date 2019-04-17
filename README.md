@@ -163,12 +163,17 @@ set.to_s_with_surrogate_alternation # => '(?:[\u0258]|\ud83e\udd29)'
 
 ### Unicode plane methods
 
-There are some methods to check for planes and to handle [BMP](https://en.wikipedia.org/wiki/Plane_%28Unicode%29#Basic_Multilingual_Plane) and astral parts:
+There are some methods to check for planes and to handle ASCII, [BMP](https://en.wikipedia.org/wiki/Plane_%28Unicode%29#Basic_Multilingual_Plane) and astral parts:
 ```Ruby
+CharacterSet['a', 'ü', '🤩'].ascii_part # => CharacterSet['a']
+CharacterSet['a', 'ü', '🤩'].ascii_part? # => true
+CharacterSet['a', 'ü', '🤩'].ascii_only? # => false
+CharacterSet['a', 'ü', '🤩'].ascii_ratio # => 0.3333333
 CharacterSet['a', 'ü', '🤩'].bmp_part # => CharacterSet['a', 'ü']
 CharacterSet['a', 'ü', '🤩'].astral_part # => CharacterSet['🤩']
 CharacterSet['a', 'ü', '🤩'].bmp_ratio # => 0.6666666
 CharacterSet['a', 'ü', '🤩'].planes # => [0, 1]
+CharacterSet.plane(1) # => CharacterSet['🤩']
 CharacterSet['a', 'ü', '🤩'].member_in_plane?(7) # => false
 CharacterSet::Character.new('a').plane # => 0
 ```

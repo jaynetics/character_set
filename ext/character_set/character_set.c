@@ -6,15 +6,15 @@
 #define CLRBIT(byte_arr, bit) (byte_arr[bit >> 3] &= ~(1 << (bit & 0x07)))
 #define TSTBIT(byte_arr, bit) (byte_arr[bit >> 3] & (1 << (bit & 0x07)))
 
-typedef char cp_byte;
-typedef unsigned long cp_index;
-
 #define UNICODE_PLANE_SIZE 0x10000
 #define UNICODE_PLANE_COUNT 17
 #define UNICODE_CP_COUNT (UNICODE_PLANE_SIZE * UNICODE_PLANE_COUNT)
 #define UNICODE_TOTAL_BYTES (UNICODE_CP_COUNT / 8)
 
 #define CPS_MEMSIZE (sizeof(cp_byte) * UNICODE_TOTAL_BYTES)
+
+typedef char cp_byte;
+typedef unsigned long cp_index;
 
 struct character_set_data
 {
@@ -96,19 +96,25 @@ method_allocate(VALUE self)
 // `Set` compatibility methods
 // ***************************
 
-static inline VALUE
-enumerator_length(VALUE self, VALUE args, VALUE eobj)
+static inline cp_index
+cset_count(VALUE self)
 {
   cp_index count;
   count = 0;
   FOR_EACH_ACTIVE_CODEPOINT(count++);
-  return LONG2FIX(count);
+  return count;
 }
 
 static VALUE
-method_length(VALUE self)
+method_count(VALUE self)
 {
-  return enumerator_length(self, 0, 0);
+  return LONG2FIX(cset_count(self));
+}
+
+static inline VALUE
+enumerator_length(VALUE self, VALUE args, VALUE eobj)
+{
+  return LONG2FIX(cset_count(self));
 }
 
 static VALUE
@@ -604,6 +610,70 @@ new_set_from_section(VALUE set, cp_index from, cp_index upto)
   return alloc_cset(RBASIC(set)->klass, new_cps);
 }
 
+static inline cp_index
+count_in_section(VALUE set, cp_index from, cp_index upto)
+{
+  cp_byte *cps;
+  cp_index cp, count;
+  cps = fetch_cps(set);
+  for (count = 0, cp = from; cp <= upto; cp++)
+  {
+    if (TSTBIT(cps, cp))
+    {
+      count++;
+    }
+  }
+  return count;
+}
+
+static inline VALUE
+has_cp_in_section(VALUE set, cp_index from, cp_index upto)
+{
+  cp_byte *cps;
+  cp_index cp;
+  cps = fetch_cps(set);
+  for (cp = from; cp <= upto; cp++)
+  {
+    if (TSTBIT(cps, cp))
+    {
+      return Qtrue;
+    }
+  }
+  return Qfalse;
+}
+
+static inline VALUE
+ratio_of_section(VALUE set, cp_index from, cp_index upto)
+{
+  return DBL2NUM((double)count_in_section(set, from, upto) / (double)cset_count(set));
+}
+
+#define ASCII_CP_COUNT 0x80
+
+static VALUE
+method_ascii_part(VALUE self)
+{
+  return new_set_from_section(self, 0, ASCII_CP_COUNT - 1);
+}
+
+static VALUE
+method_ascii_part_p(VALUE self)
+{
+  return has_cp_in_section(self, 0, ASCII_CP_COUNT - 1);
+}
+
+static VALUE
+method_ascii_only_p(VALUE self)
+{
+  return has_cp_in_section(self, ASCII_CP_COUNT, UNICODE_CP_COUNT - 1) ? Qfalse : Qtrue;
+}
+
+static VALUE
+method_ascii_ratio(VALUE self)
+{
+  return ratio_of_section(self, 0, ASCII_CP_COUNT - 1);
+}
+
 static VALUE
 method_bmp_part(VALUE self)
 {
@@ -611,9 +681,45 @@ method_bmp_part(VALUE self)
 }
 
 static VALUE
+method_bmp_part_p(VALUE self)
+{
+  return has_cp_in_section(self, 0, UNICODE_PLANE_SIZE - 1);
+}
+
+static VALUE
+method_bmp_only_p(VALUE self)
+{
+  return has_cp_in_section(self, UNICODE_PLANE_SIZE, UNICODE_CP_COUNT - 1) ? Qfalse : Qtrue;
+}
+
+static VALUE
+method_bmp_ratio(VALUE self)
+{
+  return ratio_of_section(self, 0, UNICODE_PLANE_SIZE - 1);
+}
+
+static VALUE
 method_astral_part(VALUE self)
 {
   return new_set_from_section(self, UNICODE_PLANE_SIZE, UNICODE_CP_COUNT - 1);
+}
+
+static VALUE
+method_astral_part_p(VALUE self)
+{
+  return has_cp_in_section(self, UNICODE_PLANE_SIZE, UNICODE_CP_COUNT - 1);
+}
+
+static VALUE
+method_astral_only_p(VALUE self)
+{
+  return has_cp_in_section(self, 0, UNICODE_PLANE_SIZE - 1) ? Qfalse : Qtrue;
+}
+
+static VALUE
+method_astral_ratio(VALUE self)
+{
+  return ratio_of_section(self, UNICODE_PLANE_SIZE, UNICODE_CP_COUNT - 1);
 }
 
 static inline VALUE
@@ -650,16 +756,34 @@ method_planes(VALUE self)
   return planes;
 }
 
+static inline int
+valid_plane_num(VALUE num)
+{
+  int plane;
+  Check_Type(num, T_FIXNUM);
+  plane = FIX2INT(num);
+  if (plane < 0 || plane >= UNICODE_PLANE_COUNT)
+  {
+    rb_raise(rb_eArgError, "plane must be between 0 and %d", UNICODE_PLANE_COUNT - 1);
+  }
+  return plane;
+}
+
+static VALUE
+method_plane(VALUE self, VALUE plane_num)
+{
+  cp_index plane, plane_beg, plane_end;
+  plane = valid_plane_num(plane_num);
+  plane_beg = plane * UNICODE_PLANE_SIZE;
+  plane_end = (plane + 1) * UNICODE_PLANE_SIZE - 1;
+  return new_set_from_section(self, plane_beg, plane_end);
+}
+
 static VALUE
 method_member_in_plane_p(VALUE self, VALUE plane_num)
 {
-  int plane;
-  Check_Type(plane_num, T_FIXNUM);
-  plane = FIX2INT(plane_num);
-  if (plane < 0 || plane >= UNICODE_PLANE_COUNT)
-  {
-    rb_raise(rb_eArgError, "plane must be between 0 and 16");
-  }
+  unsigned int plane;
+  plane = valid_plane_num(plane_num);
   return set_has_member_in_plane(self, plane);
 }
 
@@ -1009,9 +1133,9 @@ void Init_character_set()
 
   rb_define_method(cs, "each", method_each, 0);
   rb_define_method(cs, "to_a", method_to_a, -1);
-  rb_define_method(cs, "length", method_length, 0);
-  rb_define_method(cs, "size", method_length, 0);
-  rb_define_method(cs, "count", method_length, 0);
+  rb_define_method(cs, "count", method_count, 0);
+  rb_define_method(cs, "length", method_count, 0);
+  rb_define_method(cs, "size", method_count, 0);
   rb_define_method(cs, "empty?", method_empty_p, 0);
   rb_define_method(cs, "hash", method_hash, 0);
   rb_define_method(cs, "keep_if", method_keep_if, 0);
@@ -1057,9 +1181,20 @@ void Init_character_set()
 
   rb_define_method(cs, "ranges", method_ranges, 0);
   rb_define_method(cs, "sample", method_sample, -1);
+  rb_define_method(cs, "ascii_part", method_ascii_part, 0);
+  rb_define_method(cs, "ascii_part?", method_ascii_part_p, 0);
+  rb_define_method(cs, "ascii_only?", method_ascii_only_p, 0);
+  rb_define_method(cs, "ascii_ratio", method_ascii_ratio, 0);
   rb_define_method(cs, "bmp_part", method_bmp_part, 0);
+  rb_define_method(cs, "bmp_part?", method_bmp_part_p, 0);
+  rb_define_method(cs, "bmp_only?", method_bmp_only_p, 0);
+  rb_define_method(cs, "bmp_ratio", method_bmp_ratio, 0);
   rb_define_method(cs, "astral_part", method_astral_part, 0);
+  rb_define_method(cs, "astral_part?", method_astral_part_p, 0);
+  rb_define_method(cs, "astral_only?", method_astral_only_p, 0);
+  rb_define_method(cs, "astral_ratio", method_astral_ratio, 0);
   rb_define_method(cs, "planes", method_planes, 0);
+  rb_define_method(cs, "plane", method_plane, 1);
   rb_define_method(cs, "member_in_plane?", method_member_in_plane_p, 1);
   rb_define_method(cs, "ext_inversion", method_ext_inversion, -1);
   rb_define_method(cs, "case_insensitive", method_case_insensitive, 0);

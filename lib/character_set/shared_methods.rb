@@ -70,7 +70,17 @@ class CharacterSet
           merge(enum)
         end
 
-        # stringification methods
+        # CharacterSet-specific conversion methods
+
+        def assigned
+          self & self.class.assigned
+        end
+
+        def valid
+          self - self.class.surrogate
+        end
+
+        # CharacterSet-specific stringification methods
 
         def to_s(opts = {}, &block)
           Writer.write(ranges, opts, &block)
@@ -85,22 +95,11 @@ class CharacterSet
           "#<CharacterSet: {\#{first(5) * ', '}\#{'...' if len > 5}} (size: \#{len})>"
         end
 
-        # unicode-plane-related methods
-
-        def bmp_part?
-          !bmp_part.empty?
-        end
-
-        def astral_part?
-          !astral_part.empty?
-        end
-
-        def bmp_ratio
-          bmp_part.count / count.to_f
-        end
-
-        def astral_ratio
-          astral_part.count / count.to_f
+        # C-extension adapter method. Needs overriding in pure fallback.
+        # Parsing kwargs in C is slower, verbose, and kinda deprecated.
+        # TODO: parse?
+        def inversion(include_surrogates: false, upto: 0x10FFFF)
+          ext_inversion(include_surrogates, upto)
         end
 
         #
@@ -164,12 +163,6 @@ class CharacterSet
           else
             Set.new(classify(&func).values)
           end
-        end
-
-        # C-extension adapter method. Needs overriding in pure fallback.
-        # Parsing kwargs in C is slower, verbose, and kinda deprecated.
-        def inversion(include_surrogates: false, upto: 0x10FFFF)
-          ext_inversion(include_surrogates, upto)
         end
       RUBY
     end # self.included

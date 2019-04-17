@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - improved `String` manipulation speed
 - new predefined sets `CharacterSet::assigned`, `::surrogate`
+- conversion methods `#assigned`, `#valid`
+- section methods `#plane(n)`, `#ascii_part`, `#ascii_part?`, `#ascii_only?`, `#ascii_ratio`, `#astral_only?`
 
 ### Fixed
 - `CharacterSet::Pure#keep_in`, `#delete_in` now preserve the original encoding
