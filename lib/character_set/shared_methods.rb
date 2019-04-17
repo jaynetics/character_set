@@ -92,7 +92,7 @@ class CharacterSet
 
         def inspect
           len = length
-          "#<CharacterSet: {\#{first(5) * ', '}\#{'...' if len > 5}} (size: \#{len})>"
+          "#<#{klass.name}: {\#{first(5) * ', '}\#{'...' if len > 5}} (size: \#{len})>"
         end
 
         # C-extension adapter method. Needs overriding in pure fallback.
