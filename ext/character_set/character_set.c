@@ -106,7 +106,7 @@ cset_count(VALUE self)
 }
 
 static VALUE
-method_count(VALUE self)
+method_length(VALUE self)
 {
   return LONG2FIX(cset_count(self));
 }
@@ -1133,9 +1133,8 @@ void Init_character_set()
 
   rb_define_method(cs, "each", method_each, 0);
   rb_define_method(cs, "to_a", method_to_a, -1);
-  rb_define_method(cs, "count", method_count, 0);
-  rb_define_method(cs, "length", method_count, 0);
-  rb_define_method(cs, "size", method_count, 0);
+  rb_define_method(cs, "length", method_length, 0);
+  rb_define_method(cs, "size", method_length, 0);
   rb_define_method(cs, "empty?", method_empty_p, 0);
   rb_define_method(cs, "hash", method_hash, 0);
   rb_define_method(cs, "keep_if", method_keep_if, 0);
