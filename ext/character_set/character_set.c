@@ -97,7 +97,7 @@ method_allocate(VALUE self)
 // ***************************
 
 static inline cp_index
-cset_count(VALUE self)
+active_cp_count(VALUE self)
 {
   cp_index count;
   count = 0;
@@ -108,13 +108,13 @@ cset_count(VALUE self)
 static VALUE
 method_length(VALUE self)
 {
-  return LONG2FIX(cset_count(self));
+  return LONG2FIX(active_cp_count(self));
 }
 
 static inline VALUE
 enumerator_length(VALUE self, VALUE args, VALUE eobj)
 {
-  return LONG2FIX(cset_count(self));
+  return LONG2FIX(active_cp_count(self));
 }
 
 static VALUE
@@ -611,7 +611,7 @@ new_set_from_section(VALUE set, cp_index from, cp_index upto)
 }
 
 static inline cp_index
-count_in_section(VALUE set, cp_index from, cp_index upto)
+active_cp_count_in_section(VALUE set, cp_index from, cp_index upto)
 {
   cp_byte *cps;
   cp_index cp, count;
@@ -645,81 +645,87 @@ has_cp_in_section(VALUE set, cp_index from, cp_index upto)
 static inline VALUE
 ratio_of_section(VALUE set, cp_index from, cp_index upto)
 {
-  return DBL2NUM((double)count_in_section(set, from, upto) / (double)cset_count(set));
+  double section_count, total_count;
+  section_count = (double)active_cp_count_in_section(set, from, upto);
+  total_count = (double)active_cp_count(set);
+  return DBL2NUM(section_count / total_count);
 }
 
-#define ASCII_CP_COUNT 0x80
+#define MAX_CP 0x10FFFF
+#define MAX_ASCII_CP 0x7F
+#define MAX_BMP_CP 0xFFFF
+#define MIN_ASTRAL_CP 0x10000
 
 static VALUE
 method_ascii_part(VALUE self)
 {
-  return new_set_from_section(self, 0, ASCII_CP_COUNT - 1);
+  return new_set_from_section(self, 0, MAX_ASCII_CP);
 }
 
 static VALUE
 method_ascii_part_p(VALUE self)
 {
-  return has_cp_in_section(self, 0, ASCII_CP_COUNT - 1);
+  return has_cp_in_section(self, 0, MAX_ASCII_CP);
 }
 
 static VALUE
 method_ascii_only_p(VALUE self)
 {
-  return has_cp_in_section(self, ASCII_CP_COUNT, UNICODE_CP_COUNT - 1) ? Qfalse : Qtrue;
+  return has_cp_in_section(self, MAX_ASCII_CP + 1, MAX_CP) ? Qfalse : Qtrue;
 }
 
 static VALUE
 method_ascii_ratio(VALUE self)
 {
-  return ratio_of_section(self, 0, ASCII_CP_COUNT - 1);
+  return ratio_of_section(self, 0, MAX_ASCII_CP);
 }
 
 static VALUE
 method_bmp_part(VALUE self)
 {
-  return new_set_from_section(self, 0, UNICODE_PLANE_SIZE - 1);
+  return new_set_from_section(self, 0, MAX_BMP_CP);
 }
 
 static VALUE
 method_bmp_part_p(VALUE self)
 {
-  return has_cp_in_section(self, 0, UNICODE_PLANE_SIZE - 1);
+  return has_cp_in_section(self, 0, MAX_BMP_CP);
 }
 
 static VALUE
 method_bmp_only_p(VALUE self)
 {
-  return has_cp_in_section(self, UNICODE_PLANE_SIZE, UNICODE_CP_COUNT - 1) ? Qfalse : Qtrue;
+  return has_cp_in_section(self, MIN_ASTRAL_CP, MAX_CP) ? Qfalse : Qtrue;
 }
 
 static VALUE
 method_bmp_ratio(VALUE self)
 {
-  return ratio_of_section(self, 0, UNICODE_PLANE_SIZE - 1);
+  return ratio_of_section(self, 0, MAX_BMP_CP);
 }
 
 static VALUE
 method_astral_part(VALUE self)
 {
-  return new_set_from_section(self, UNICODE_PLANE_SIZE, UNICODE_CP_COUNT - 1);
+  return new_set_from_section(self, MIN_ASTRAL_CP, MAX_CP);
 }
 
 static VALUE
 method_astral_part_p(VALUE self)
 {
-  return has_cp_in_section(self, UNICODE_PLANE_SIZE, UNICODE_CP_COUNT - 1);
+  return has_cp_in_section(self, MIN_ASTRAL_CP, MAX_CP);
 }
 
 static VALUE
 method_astral_only_p(VALUE self)
 {
-  return has_cp_in_section(self, 0, UNICODE_PLANE_SIZE - 1) ? Qfalse : Qtrue;
+  return has_cp_in_section(self, 0, MAX_BMP_CP) ? Qfalse : Qtrue;
 }
 
 static VALUE
 method_astral_ratio(VALUE self)
 {
-  return ratio_of_section(self, UNICODE_PLANE_SIZE, UNICODE_CP_COUNT - 1);
+  return ratio_of_section(self, MIN_ASTRAL_CP, MAX_CP);
 }
 
 static inline VALUE
@@ -729,7 +735,7 @@ set_has_member_in_plane(VALUE set, unsigned int plane)
   cp_index cp, max_cp;
   cps = fetch_cps(set);
   cp = plane * UNICODE_PLANE_SIZE;
-  max_cp = (plane + 1) * UNICODE_PLANE_SIZE - 1;
+  max_cp = (plane + 1) * MAX_BMP_CP;
   for (/* */; cp <= max_cp; cp++)
   {
     if (TSTBIT(cps, cp))
@@ -775,7 +781,7 @@ method_plane(VALUE self, VALUE plane_num)
   cp_index plane, plane_beg, plane_end;
   plane = valid_plane_num(plane_num);
   plane_beg = plane * UNICODE_PLANE_SIZE;
-  plane_end = (plane + 1) * UNICODE_PLANE_SIZE - 1;
+  plane_end = (plane + 1) * MAX_BMP_CP;
   return new_set_from_section(self, plane_beg, plane_end);
 }
 
