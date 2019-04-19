@@ -814,10 +814,10 @@ method_ext_inversion(int argc, VALUE *argv, VALUE self)
       !TSTBIT(a, cp) && (include_surrogates || NON_SURROGATE(cp)));
 }
 
-typedef int (*str_cp_handler)(unsigned int, cp_byte *);
+typedef int (*str_cp_handler)(unsigned int, cp_byte *, VALUE *memo);
 
 static inline int
-add_str_cp_to_arr(unsigned int str_cp, cp_byte *cp_arr)
+add_str_cp_to_arr(unsigned int str_cp, cp_byte *cp_arr, VALUE *memo)
 {
   SETBIT(cp_arr, str_cp);
   return 1;
@@ -862,15 +862,16 @@ method_case_insensitive(VALUE self)
 }
 
 static inline VALUE
-each_sb_cp(VALUE str, str_cp_handler func, cp_byte *cp_arr)
+each_sb_cp(VALUE str, str_cp_handler func, cp_byte *cp_arr, VALUE *memo)
 {
-  long i;
+  long i, len;
   unsigned int str_cp;
+  len = RSTRING_LEN(str);
 
-  for (i = 0; i < RSTRING_LEN(str); i++)
+  for (i = 0; i < len; i++)
   {
     str_cp = (RSTRING_PTR(str)[i] & 0xff);
-    if (!(*func)(str_cp, cp_arr))
+    if (!(*func)(str_cp, cp_arr, memo))
     {
       return Qfalse;
     }
@@ -880,7 +881,7 @@ each_sb_cp(VALUE str, str_cp_handler func, cp_byte *cp_arr)
 }
 
 static inline VALUE
-each_mb_cp(VALUE str, str_cp_handler func, cp_byte *cp_arr)
+each_mb_cp(VALUE str, str_cp_handler func, cp_byte *cp_arr, VALUE *memo)
 {
   int n;
   unsigned int str_cp;
@@ -895,7 +896,7 @@ each_mb_cp(VALUE str, str_cp_handler func, cp_byte *cp_arr)
   while (ptr < end)
   {
     str_cp = rb_enc_codepoint_len(ptr, end, &n, enc);
-    if (!(*func)(str_cp, cp_arr))
+    if (!(*func)(str_cp, cp_arr, memo))
     {
       return Qfalse;
     }
@@ -925,13 +926,13 @@ single_byte_optimizable(VALUE str)
 }
 
 static inline VALUE
-each_cp(VALUE str, str_cp_handler func, cp_byte *cp_arr)
+each_cp(VALUE str, str_cp_handler func, cp_byte *cp_arr, VALUE *memo)
 {
   if (single_byte_optimizable(str))
   {
-    return each_sb_cp(str, func, cp_arr);
+    return each_sb_cp(str, func, cp_arr, memo);
   }
-  return each_mb_cp(str, func, cp_arr);
+  return each_mb_cp(str, func, cp_arr, memo);
 }
 
 static inline void
@@ -949,12 +950,66 @@ class_method_of(VALUE self, VALUE str)
   cp_byte *cp_arr;
   raise_arg_err_unless_string(str);
   cp_arr = alloc_cps();
-  each_cp(str, add_str_cp_to_arr, cp_arr);
+  each_cp(str, add_str_cp_to_arr, cp_arr, 0);
   return alloc_cset(self, cp_arr);
 }
 
 static inline int
-str_cp_not_in_arr(unsigned int str_cp, cp_byte *cp_arr)
+count_str_cp(unsigned int str_cp, cp_byte *cp_arr, VALUE *memo)
+{
+  if (TSTBIT(cp_arr, str_cp))
+  {
+    *memo += 1;
+  }
+  return 1;
+}
+
+static VALUE
+method_count_in(VALUE self, VALUE str)
+{
+  VALUE count;
+  raise_arg_err_unless_string(str);
+  count = 0;
+  each_cp(str, count_str_cp, fetch_cps(self), &count);
+  return INT2NUM(count);
+}
+
+static inline int
+str_cp_in_arr(unsigned int str_cp, cp_byte *cp_arr, VALUE *memo)
+{
+  return TSTBIT(cp_arr, str_cp);
+}
+
+static VALUE
+method_cover_p(VALUE self, VALUE str)
+{
+  raise_arg_err_unless_string(str);
+  return each_cp(str, str_cp_in_arr, fetch_cps(self), 0);
+}
+
+static inline int
+add_str_cp_to_str_arr(unsigned int str_cp, cp_byte *cp_arr, VALUE *memo)
+{
+  if (TSTBIT(cp_arr, str_cp))
+  {
+    rb_ary_push(memo[0], rb_enc_uint_chr((int)str_cp, (rb_encoding *)memo[1]));
+  }
+  return 1;
+}
+
+static VALUE
+method_scan(VALUE self, VALUE str)
+{
+  VALUE memo[2];
+  raise_arg_err_unless_string(str);
+  memo[0] = rb_ary_new();
+  memo[1] = (VALUE)rb_enc_get(str);
+  each_cp(str, add_str_cp_to_str_arr, fetch_cps(self), memo);
+  return memo[0];
+}
+
+static inline int
+str_cp_not_in_arr(unsigned int str_cp, cp_byte *cp_arr, VALUE *memo)
 {
   return !TSTBIT(cp_arr, str_cp);
 }
@@ -966,23 +1021,8 @@ method_used_by_p(VALUE self, VALUE str)
   VALUE only_uses_other_cps;
   raise_arg_err_unless_string(str);
   cps = fetch_cps(self);
-  only_uses_other_cps = each_cp(str, str_cp_not_in_arr, cps);
+  only_uses_other_cps = each_cp(str, str_cp_not_in_arr, cps, 0);
   return only_uses_other_cps == Qfalse ? Qtrue : Qfalse;
-}
-
-static inline int
-str_cp_in_arr(unsigned int str_cp, cp_byte *cp_arr)
-{
-  return TSTBIT(cp_arr, str_cp);
-}
-
-static VALUE
-method_cover_p(VALUE self, VALUE str)
-{
-  cp_byte *cps;
-  raise_arg_err_unless_string(str);
-  cps = fetch_cps(self);
-  return each_cp(str, str_cp_in_arr, cps);
 }
 
 static void
@@ -1203,10 +1243,12 @@ void Init_character_set()
   rb_define_method(cs, "member_in_plane?", method_member_in_plane_p, 1);
   rb_define_method(cs, "ext_inversion", method_ext_inversion, -1);
   rb_define_method(cs, "case_insensitive", method_case_insensitive, 0);
-  rb_define_method(cs, "used_by?", method_used_by_p, 1);
+  rb_define_method(cs, "count_in", method_count_in, 1);
   rb_define_method(cs, "cover?", method_cover_p, 1);
   rb_define_method(cs, "delete_in", method_delete_in, 1);
   rb_define_method(cs, "delete_in!", method_delete_in_bang, 1);
   rb_define_method(cs, "keep_in", method_keep_in, 1);
   rb_define_method(cs, "keep_in!", method_keep_in_bang, 1);
+  rb_define_method(cs, "scan", method_scan, 1);
+  rb_define_method(cs, "used_by?", method_used_by_p, 1);
 }

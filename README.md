@@ -3,9 +3,9 @@
 [![Gem Version](https://badge.fury.io/rb/character_set.svg)](http://badge.fury.io/rb/character_set)
 [![Build Status](https://travis-ci.org/jaynetics/character_set.svg?branch=master)](https://travis-ci.org/jaynetics/character_set)
 
-This is a C-extended Ruby gem to build, read, write and compare sets of Unicode codepoints.
+This is a C-extended Ruby gem to work with sets of Unicode codepoints. It can read and write these sets in various formats and implements the stdlib `Set` interface for them.
 
-It can also replace some `Regexp` actions on `String` instances, offering much better speed (see [benchmarks](./BENCHMARK.md)).
+It also offers an alternate paradigm of `String` processing which grants much better performance than `Regexp` and `String` methods from the stdlib where applicable (see [benchmarks](./BENCHMARK.md)).
 
 Many parts can be used independently, e.g.:
 - `CharacterSet::Character`
@@ -62,6 +62,8 @@ CharacterSet.non_ascii
 
 ### Interact with Strings
 
+`CharacterSet` can replace some types of `String` handling with better performance than the stdlib.
+
 `#used_by?` and `#cover?` can replace some `Regexp#match?` calls:
 
 ```ruby
@@ -83,6 +85,13 @@ CharacterSet.ascii.delete_in!(string) # => 'üü'
 string # => 'üü'
 CharacterSet.ascii.keep_in!(string) # => ''
 string # => ''
+```
+
+`#count_in` and `#scan` can replace `String#count` and `String#scan`:
+
+```ruby
+CharacterSet.non_ascii.count_in('Tüür') # => 2
+CharacterSet.non_ascii.scan_in('Tüür') # => ['ü', 'ü']
 ```
 
 There is also a core extension for String interaction.

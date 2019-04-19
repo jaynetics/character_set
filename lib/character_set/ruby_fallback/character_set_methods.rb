@@ -39,9 +39,8 @@ class CharacterSet
         count.nil? ? to_a(true).sample : to_a(true).sample(count)
       end
 
-      def used_by?(string)
-        str!(string).each_codepoint { |cp| return true if include?(cp) }
-        false
+      def count_in(string)
+        str!(string).each_codepoint.count { |cp| include?(cp) }
       end
 
       def cover?(string)
@@ -65,6 +64,18 @@ class CharacterSet
       def keep_in!(string)
         result = keep_in(string)
         result.size == string.size ? nil : string.replace(result)
+      end
+
+      def scan(string)
+        encoding = str!(string).encoding
+        string.each_codepoint.inject([]) do |arr, cp|
+          include?(cp) ? arr.push(cp.chr(encoding)) : arr
+        end
+      end
+
+      def used_by?(string)
+        str!(string).each_codepoint { |cp| return true if include?(cp) }
+        false
       end
 
       private

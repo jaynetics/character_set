@@ -29,12 +29,12 @@ describe 'CharacterSet String core extension' do
     end
   end
 
-  describe 'String#covered_by_character_set?' do
-    it_behaves_like :string_ext_method, :covered_by_character_set?, :cover?
+  describe 'String#count_by_character_set' do
+    it_behaves_like :string_ext_method, :count_by_character_set, :count_in
   end
 
-  describe 'String#uses_character_set?' do
-    it_behaves_like :string_ext_method, :uses_character_set?, :used_by?
+  describe 'String#covered_by_character_set?' do
+    it_behaves_like :string_ext_method, :covered_by_character_set?, :cover?
   end
 
   describe 'String#delete_character_set' do
@@ -51,5 +51,13 @@ describe 'CharacterSet String core extension' do
 
   describe 'String#keep_character_set!' do
     it_behaves_like :string_ext_method, :keep_character_set!, :keep_in!
+  end
+
+  describe 'String#scan_by_character_set' do
+    it_behaves_like :string_ext_method, :scan_by_character_set, :scan
+  end
+
+  describe 'String#uses_character_set?' do
+    it_behaves_like :string_ext_method, :uses_character_set?, :used_by?
   end
 end
