@@ -6,6 +6,8 @@ RSpec::Matchers.define(:be_memsafe) do |runs: 20_000|
     # and stop skipping this once it does not randomly fail
     skip 'cant check memsafety with MJIT' if (RubyVM::MJIT.enabled? rescue nil)
 
+    skip 'cant check memsafety on this platform' if RUBY_PLATFORM[/java/i]
+
     skip 'SKIP_MEMSAFETY_SPECS is set' if ENV['SKIP_MEMSAFETY_SPECS'].to_i == 1
 
     pscmd = ['ps', '-orss=', '-p', $$.to_s]

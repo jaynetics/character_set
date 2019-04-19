@@ -10,13 +10,7 @@ shared_examples :character_set_ranges do |variant|
       .to eq [1..1, 3..3]
 
     expect(variant[0, 2, 3, 4, 6, 8, 11, 12].ranges)
-      .to eq [
-        0..0,
-        2..4,
-        6..6,
-        8..8,
-        11..12,
-      ]
+      .to eq [0..0, 2..4, 6..6, 8..8, 11..12]
   end
 end
 
