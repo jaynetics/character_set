@@ -1,0 +1,2 @@
+benchmarks/* linguist-detectable=false
+spec/ruby-spec/* linguist-vendored=true
