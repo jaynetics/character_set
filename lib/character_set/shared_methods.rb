@@ -72,11 +72,11 @@ class CharacterSet
 
         # CharacterSet-specific conversion methods
 
-        def assigned
+        def assigned_part
           self & self.class.assigned
         end
 
-        def valid
+        def valid_part
           self - self.class.surrogate
         end
 
