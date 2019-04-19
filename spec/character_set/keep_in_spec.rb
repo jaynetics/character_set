@@ -67,6 +67,11 @@ end
 
 describe "CharacterSet#keep_in" do
   it_behaves_like :character_set_keep_in, CharacterSet
+
+  it 'is memsafe' do
+    set = CharacterSet[97, 98, 99]
+    expect { set.keep_in('abcd') }.to be_memsafe(runs: 1_000_000)
+  end
 end
 
 describe "CharacterSet::Pure#keep_in" do

@@ -44,13 +44,19 @@ shared_examples :character_set_keep_in_bang do |variant|
     expect { variant[].keep_in!("a\xC1\x80b") }.to raise_error(ArgumentError)
   end
 
-  it 'raises FrozenError if passed a frozen String' do
+  it 'raises FrozenError if passed a frozen String',
+     if: ruby_version_is_at_least('2.5') do
     expect { variant[97].keep_in!('abc'.freeze) }.to raise_error(FrozenError)
   end
 end
 
 describe "CharacterSet#keep_in!" do
   it_behaves_like :character_set_keep_in_bang, CharacterSet
+
+  it 'is memsafe' do
+    set = CharacterSet[97, 98, 99]
+    expect { set.keep_in!('abcd') }.to be_memsafe(runs: 1_000_000)
+  end
 end
 
 describe "CharacterSet::Pure#keep_in!" do

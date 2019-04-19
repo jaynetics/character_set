@@ -7,6 +7,13 @@ RSpec::Core::RakeTask.new(:spec)
 
 task default: :spec
 
+namespace :spec do
+  task :quick do
+    ENV['SKIP_MEMSAFETY_SPECS'] = '1'
+    Rake::Task[:spec].invoke
+  end
+end
+
 Rake::ExtensionTask.new('character_set') do |ext|
   ext.lib_dir = 'lib/character_set'
 end

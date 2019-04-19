@@ -68,6 +68,11 @@ end
 
 describe "CharacterSet#delete_in" do
   it_behaves_like :character_set_delete_in, CharacterSet
+
+  it 'is memsafe' do
+    set = CharacterSet[97, 98, 99]
+    expect { set.delete_in('abcd') }.to be_memsafe(runs: 1_000_000)
+  end
 end
 
 describe "CharacterSet::Pure#delete_in" do

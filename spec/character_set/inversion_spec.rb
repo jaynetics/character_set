@@ -17,6 +17,11 @@ end
 
 describe "CharacterSet#inversion" do
   it_behaves_like :character_set_inversion, CharacterSet
+
+  it 'is memsafe' do
+    set = CharacterSet[]
+    expect { set.inversion }.to be_memsafe
+  end
 end
 
 describe "CharacterSet::Pure#inversion" do

@@ -18,6 +18,10 @@ end
 
 describe "CharacterSet#initialize" do
   it_behaves_like :character_set_initialize, CharacterSet
+
+  it 'is memsafe' do
+    expect { CharacterSet.new(0..0xFFFF) }.to be_memsafe
+  end
 end
 
 describe "CharacterSet::Pure#initialize" do

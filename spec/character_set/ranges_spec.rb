@@ -22,6 +22,11 @@ end
 
 describe "CharacterSet#ranges" do
   it_behaves_like :character_set_ranges, CharacterSet
+
+  it 'is memsafe' do
+    set = CharacterSet[97, 98, 99]
+    expect { set.ranges }.to be_memsafe
+  end
 end
 
 describe "CharacterSet::Pure#ranges" do

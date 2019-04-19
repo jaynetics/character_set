@@ -21,6 +21,11 @@ end
 
 describe "CharacterSet#case_insensitive" do
   it_behaves_like :character_set_case_insensitive, CharacterSet
+
+  it 'is memsafe' do
+    set = CharacterSet['a', 'b', 'c']
+    expect { set.case_insensitive }.to be_memsafe
+  end
 end
 
 describe "CharacterSet::Pure#case_insensitive" do

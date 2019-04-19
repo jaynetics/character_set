@@ -10,6 +10,11 @@ end
 
 describe "CharacterSet#to_a" do
   it_behaves_like :character_set_to_a, CharacterSet
+
+  it 'is memsafe' do
+    set = CharacterSet[97, 98, 99]
+    expect { set.to_a }.to be_memsafe
+  end
 end
 
 describe "CharacterSet::Pure#to_a" do
