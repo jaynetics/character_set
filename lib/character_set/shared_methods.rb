@@ -95,11 +95,27 @@ class CharacterSet
           "#<#{klass.name}: {\#{first(5) * ', '}\#{'...' if len > 5}} (size: \#{len})>"
         end
 
-        # C-extension adapter method. Needs overriding in pure fallback.
+        # C-extension adapter methods. Need overriding in pure fallback.
         # Parsing kwargs in C is slower, verbose, and kinda deprecated.
-        # TODO: parse?
+
         def inversion(include_surrogates: false, upto: 0x10FFFF)
           ext_inversion(include_surrogates, upto)
+        end
+
+        def section(from:, upto: 0x10FFFF)
+          ext_section(from, upto)
+        end
+
+        def count_in_section(from:, upto: 0x10FFFF)
+          ext_count_in_section(from, upto)
+        end
+
+        def section?(from:, upto: 0x10FFFF)
+          ext_section?(from, upto)
+        end
+
+        def section_ratio(from:, upto: 0x10FFFF)
+          ext_section_ratio(from, upto)
         end
 
         #
@@ -135,36 +151,38 @@ class CharacterSet
         end
 
         def divide(&func)
-          block_given? or return enum_for(__method__) { size }
           require 'set'
-
-          if func.arity == 2
-            require 'tsort'
-
-            class << dig = {}
-              include TSort
-
-              alias tsort_each_node each_key
-              def tsort_each_child(node, &block)
-                fetch(node).each(&block)
-              end
-            end
-
-            each do |u|
-              dig[u] = a = []
-              each{ |v| a << v if yield(u, v) }
-            end
-
-            set = Set.new
-            dig.each_strongly_connected_component do |css|
-              set.add(self.class.new(css))
-            end
-            set
-          else
-            Set.new(classify(&func).values)
-          end
+          Set.new(to_a).divide(&func)
         end
       RUBY
+
+      # CharacterSet-specific section methods
+
+      {
+        ascii:  0..0x7F,
+        bmp:    0..0xFFFF,
+        astral: 0x10000..0x10FFFF,
+      }.each do |section_name, range|
+        klass.class_eval <<-RUBY, __FILE__, __LINE__ + 1
+          def #{section_name}_part
+            section(from: #{range.begin}, upto: #{range.end})
+          end
+
+          def #{section_name}_part?
+            section?(from: #{range.begin}, upto: #{range.end})
+          end
+
+          def #{section_name}_only?
+            #{range.begin == 0 ?
+              "!section?(from: #{range.end}, upto: 0x10FFFF)" :
+              "!section?(from: 0, upto: #{range.begin})"}
+          end
+
+          def #{section_name}_ratio
+            section_ratio(from: #{range.begin}, upto: #{range.end})
+          end
+        RUBY
+      end
     end # self.included
   end # SharedMethods
 end

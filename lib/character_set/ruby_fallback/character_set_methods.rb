@@ -78,7 +78,42 @@ class CharacterSet
         false
       end
 
+      def section(from:, upto: 0x10FFFF)
+        dup.keep_if { |cp| cp >= from && cp <= upto }
+      end
+
+      def count_in_section(from:, upto: 0x10FFFF)
+        count { |cp| cp >= from && cp <= upto }
+      end
+
+      def section?(from:, upto: 0x10FFFF)
+        any? { |cp| cp >= from && cp <= upto }
+      end
+
+      def section_ratio(from:, upto: 0x10FFFF)
+        section(from: from, upto: upto).count / count.to_f
+      end
+
+      def planes
+        plane_size = 0x10000.to_f
+        inject({}) { |hash, cp| hash.merge((cp / plane_size).floor => 1) }.keys
+      end
+
+      def plane(num)
+        validate_plane_number(num)
+        section(from: (num * 0x10000), upto: ((num + 1) * 0x10000) - 1)
+      end
+
+      def member_in_plane?(num)
+        validate_plane_number(num)
+        ((num * 0x10000)...((num + 1) * 0x10000)).any? { |cp| include?(cp) }
+      end
+
       private
+
+      def validate_plane_number(num)
+        num >= 0 && num <= 16 or raise ArgumentError, 'plane must be between 0 and 16'
+      end
 
       def str!(obj)
         raise ArgumentError, 'pass a String' unless obj.respond_to?(:codepoints)

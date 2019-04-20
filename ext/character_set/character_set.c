@@ -272,17 +272,17 @@ method_include_p(VALUE self, VALUE num)
   return (TSTBIT(cps, FIX2ULONG(num)) ? Qtrue : Qfalse);
 }
 
-static inline int
-toggle_codepoint(VALUE set, VALUE cp_num, unsigned int on, int check_if_noop)
+static inline VALUE
+toggle_codepoint(VALUE set, VALUE cp_num, int on, int return_nil_if_noop)
 {
   cp_index cp;
   cp_byte *cps;
   rb_check_frozen(set);
   cps = fetch_cps(set);
   cp = FIX2ULONG(cp_num);
-  if (check_if_noop && (!TSTBIT(cps, cp) == !on))
+  if (return_nil_if_noop && (!TSTBIT(cps, cp) == !on))
   {
-    return 0;
+    return Qnil;
   }
   else
   {
@@ -294,32 +294,32 @@ toggle_codepoint(VALUE set, VALUE cp_num, unsigned int on, int check_if_noop)
     {
       CLRBIT(cps, cp);
     }
-    return 1;
+    return set;
   }
 }
 
 static VALUE
 method_add(VALUE self, VALUE cp_num)
 {
-  return toggle_codepoint(self, cp_num, 1, 0) ? self : Qnil;
+  return toggle_codepoint(self, cp_num, 1, 0);
 }
 
 static VALUE
 method_add_p(VALUE self, VALUE cp_num)
 {
-  return toggle_codepoint(self, cp_num, 1, 1) ? self : Qnil;
+  return toggle_codepoint(self, cp_num, 1, 1);
 }
 
 static VALUE
 method_delete(VALUE self, VALUE cp_num)
 {
-  return toggle_codepoint(self, cp_num, 0, 0) ? self : Qnil;
+  return toggle_codepoint(self, cp_num, 0, 0);
 }
 
 static VALUE
 method_delete_p(VALUE self, VALUE cp_num)
 {
-  return toggle_codepoint(self, cp_num, 0, 1) ? self : Qnil;
+  return toggle_codepoint(self, cp_num, 0, 1);
 }
 
 #define COMPARE_SETS(action)                \
@@ -555,24 +555,24 @@ class_method_from_ranges(VALUE self, VALUE ranges)
 static VALUE
 method_ranges(VALUE self)
 {
-  VALUE ranges, codepoint, previous_codepoint, current_start, current_end;
+  VALUE ranges, cp_num, previous_cp_num, current_start, current_end;
 
   ranges = rb_ary_new();
-  previous_codepoint = 0;
+  previous_cp_num = 0;
   current_start = 0;
   current_end = 0;
 
   FOR_EACH_ACTIVE_CODEPOINT(
-      codepoint = LONG2FIX(cp);
+      cp_num = LONG2FIX(cp);
 
-      if (!previous_codepoint) {
-        current_start = codepoint;
-      } else if (previous_codepoint + 2 != codepoint) {
+      if (!previous_cp_num) {
+        current_start = cp_num;
+      } else if (previous_cp_num + 2 != cp_num) {
         // gap found, finalize previous range
         rb_ary_push(ranges, rb_range_new(current_start, current_end, 0));
-        current_start = codepoint;
-      } current_end = codepoint;
-      previous_codepoint = codepoint;);
+        current_start = cp_num;
+      } current_end = cp_num;
+      previous_cp_num = cp_num;);
 
   // add final range
   if (current_start)
@@ -586,9 +586,8 @@ method_ranges(VALUE self)
 static VALUE
 method_sample(int argc, VALUE *argv, VALUE self)
 {
-  VALUE to_a_args[1], array;
+  VALUE array, to_a_args[1] = {Qtrue};
   rb_check_arity(argc, 0, 1);
-  to_a_args[0] = Qtrue;
   array = method_to_a(1, to_a_args, self);
   return rb_funcall(array, rb_intern("sample"), argc, argc ? argv[0] : 0);
 }
@@ -610,6 +609,12 @@ new_set_from_section(VALUE set, cp_index from, cp_index upto)
   return alloc_cset(RBASIC(set)->klass, new_cps);
 }
 
+static VALUE
+method_ext_section(VALUE self, VALUE from, VALUE upto)
+{
+  return new_set_from_section(self, FIX2ULONG(from), FIX2ULONG(upto));
+}
+
 static inline cp_index
 active_cp_count_in_section(VALUE set, cp_index from, cp_index upto)
 {
@@ -626,12 +631,16 @@ active_cp_count_in_section(VALUE set, cp_index from, cp_index upto)
   return count;
 }
 
-static inline VALUE
-has_cp_in_section(VALUE set, cp_index from, cp_index upto)
+static VALUE
+method_ext_count_in_section(VALUE self, VALUE from, VALUE upto)
 {
-  cp_byte *cps;
+  return active_cp_count_in_section(self, FIX2ULONG(from), FIX2ULONG(upto));
+}
+
+static inline VALUE
+has_cp_in_section(cp_byte *cps, cp_index from, cp_index upto)
+{
   cp_index cp;
-  cps = fetch_cps(set);
   for (cp = from; cp <= upto; cp++)
   {
     if (TSTBIT(cps, cp))
@@ -640,6 +649,14 @@ has_cp_in_section(VALUE set, cp_index from, cp_index upto)
     }
   }
   return Qfalse;
+}
+
+static VALUE
+method_ext_section_p(VALUE self, VALUE from, VALUE upto)
+{
+  cp_byte *cps;
+  cps = fetch_cps(self);
+  return has_cp_in_section(cps, FIX2ULONG(from), FIX2ULONG(upto));
 }
 
 static inline VALUE
@@ -651,110 +668,37 @@ ratio_of_section(VALUE set, cp_index from, cp_index upto)
   return DBL2NUM(section_count / total_count);
 }
 
+static VALUE
+method_ext_section_ratio(VALUE self, VALUE from, VALUE upto)
+{
+  return ratio_of_section(self, FIX2ULONG(from), FIX2ULONG(upto));
+}
+
 #define MAX_CP 0x10FFFF
 #define MAX_ASCII_CP 0x7F
 #define MAX_BMP_CP 0xFFFF
 #define MIN_ASTRAL_CP 0x10000
 
-static VALUE
-method_ascii_part(VALUE self)
-{
-  return new_set_from_section(self, 0, MAX_ASCII_CP);
-}
-
-static VALUE
-method_ascii_part_p(VALUE self)
-{
-  return has_cp_in_section(self, 0, MAX_ASCII_CP);
-}
-
-static VALUE
-method_ascii_only_p(VALUE self)
-{
-  return has_cp_in_section(self, MAX_ASCII_CP + 1, MAX_CP) ? Qfalse : Qtrue;
-}
-
-static VALUE
-method_ascii_ratio(VALUE self)
-{
-  return ratio_of_section(self, 0, MAX_ASCII_CP);
-}
-
-static VALUE
-method_bmp_part(VALUE self)
-{
-  return new_set_from_section(self, 0, MAX_BMP_CP);
-}
-
-static VALUE
-method_bmp_part_p(VALUE self)
-{
-  return has_cp_in_section(self, 0, MAX_BMP_CP);
-}
-
-static VALUE
-method_bmp_only_p(VALUE self)
-{
-  return has_cp_in_section(self, MIN_ASTRAL_CP, MAX_CP) ? Qfalse : Qtrue;
-}
-
-static VALUE
-method_bmp_ratio(VALUE self)
-{
-  return ratio_of_section(self, 0, MAX_BMP_CP);
-}
-
-static VALUE
-method_astral_part(VALUE self)
-{
-  return new_set_from_section(self, MIN_ASTRAL_CP, MAX_CP);
-}
-
-static VALUE
-method_astral_part_p(VALUE self)
-{
-  return has_cp_in_section(self, MIN_ASTRAL_CP, MAX_CP);
-}
-
-static VALUE
-method_astral_only_p(VALUE self)
-{
-  return has_cp_in_section(self, 0, MAX_BMP_CP) ? Qfalse : Qtrue;
-}
-
-static VALUE
-method_astral_ratio(VALUE self)
-{
-  return ratio_of_section(self, MIN_ASTRAL_CP, MAX_CP);
-}
-
 static inline VALUE
-set_has_member_in_plane(VALUE set, unsigned int plane)
+has_cp_in_plane(cp_byte *cps, unsigned int plane)
 {
-  cp_byte *cps;
-  cp_index cp, max_cp;
-  cps = fetch_cps(set);
-  cp = plane * UNICODE_PLANE_SIZE;
-  max_cp = (plane + 1) * MAX_BMP_CP;
-  for (/* */; cp <= max_cp; cp++)
-  {
-    if (TSTBIT(cps, cp))
-    {
-      return Qtrue;
-    }
-  }
-  return Qfalse;
+  cp_index plane_beg, plane_end;
+  plane_beg = plane * UNICODE_PLANE_SIZE;
+  plane_end = (plane + 1) * MAX_BMP_CP;
+  return has_cp_in_section(cps, plane_beg, plane_end);
 }
 
 static VALUE
 method_planes(VALUE self)
 {
+  cp_byte *cps;
   unsigned int i;
   VALUE planes;
+  cps = fetch_cps(self);
   planes = rb_ary_new();
   for (i = 0; i < UNICODE_PLANE_COUNT; i++)
   {
-    if (set_has_member_in_plane(self, i))
+    if (has_cp_in_plane(cps, i))
     {
       rb_ary_push(planes, INT2FIX(i));
     }
@@ -790,7 +734,7 @@ method_member_in_plane_p(VALUE self, VALUE plane_num)
 {
   unsigned int plane;
   plane = valid_plane_num(plane_num);
-  return set_has_member_in_plane(self, plane);
+  return has_cp_in_plane(fetch_cps(self), plane);
 }
 
 #define NON_SURROGATE(cp) (cp > 0xDFFF || cp < 0xD800)
@@ -1226,18 +1170,10 @@ void Init_character_set()
 
   rb_define_method(cs, "ranges", method_ranges, 0);
   rb_define_method(cs, "sample", method_sample, -1);
-  rb_define_method(cs, "ascii_part", method_ascii_part, 0);
-  rb_define_method(cs, "ascii_part?", method_ascii_part_p, 0);
-  rb_define_method(cs, "ascii_only?", method_ascii_only_p, 0);
-  rb_define_method(cs, "ascii_ratio", method_ascii_ratio, 0);
-  rb_define_method(cs, "bmp_part", method_bmp_part, 0);
-  rb_define_method(cs, "bmp_part?", method_bmp_part_p, 0);
-  rb_define_method(cs, "bmp_only?", method_bmp_only_p, 0);
-  rb_define_method(cs, "bmp_ratio", method_bmp_ratio, 0);
-  rb_define_method(cs, "astral_part", method_astral_part, 0);
-  rb_define_method(cs, "astral_part?", method_astral_part_p, 0);
-  rb_define_method(cs, "astral_only?", method_astral_only_p, 0);
-  rb_define_method(cs, "astral_ratio", method_astral_ratio, 0);
+  rb_define_method(cs, "ext_section", method_ext_section, 2);
+  rb_define_method(cs, "ext_count_in_section", method_ext_count_in_section, 2);
+  rb_define_method(cs, "ext_section?", method_ext_section_p, 2);
+  rb_define_method(cs, "ext_section_ratio", method_ext_section_ratio, 2);
   rb_define_method(cs, "planes", method_planes, 0);
   rb_define_method(cs, "plane", method_plane, 1);
   rb_define_method(cs, "member_in_plane?", method_member_in_plane_p, 1);
