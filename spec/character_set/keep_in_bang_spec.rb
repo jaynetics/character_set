@@ -55,7 +55,7 @@ describe "CharacterSet#keep_in!" do
 
   it 'is memsafe' do
     set = CharacterSet[97, 98, 99]
-    expect { set.keep_in!('abcd') }.to be_memsafe(runs: 1_000_000)
+    expect { set.keep_in!('abcd') }.to be_memsafe
   end
 end
 

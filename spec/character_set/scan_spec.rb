@@ -46,7 +46,7 @@ describe "CharacterSet#scan" do
 
   it 'is memsafe' do
     set = CharacterSet[97, 98, 99]
-    expect { set.scan('abcd') }.to be_memsafe(runs: 1_000_000)
+    expect { set.scan('abcd') }.to be_memsafe
   end
 end
 
