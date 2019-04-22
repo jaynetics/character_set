@@ -1,6 +1,5 @@
 TESTED_ENCODINGS = [
-  ::Encoding::ASCII,
-  ::Encoding::BINARY,
+  ::Encoding::ASCII_8BIT,
   ::Encoding::ISO8859_1,
   ::Encoding::SHIFT_JIS,
   ::Encoding::UTF_8,
