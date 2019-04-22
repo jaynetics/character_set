@@ -3,6 +3,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 
 require 'benchmark/ips'
 require 'character_set'
+require 'set'
 
 def benchmark(caption: nil, cases: {})
   puts caption

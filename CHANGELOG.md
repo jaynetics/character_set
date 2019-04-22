@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - section methods `#plane(n)`, `#ascii_part`, `#ascii_part?`, `#ascii_only?`, `#ascii_ratio`, `#astral_only?`
 
 ### Fixed
+- reduced memory consumption by > 90% for most use cases by dynamic resizing
+  - before, every set instance needed 136 KB
+  - now 16 bytes for a CharacterSet in ASCII space, 8 KB for one in BMP space etc.
 - `CharacterSet::Pure#keep_in`, `#delete_in` now preserve the original encoding
 - `#count` now supports passing an argument or block
 
