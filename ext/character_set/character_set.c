@@ -263,6 +263,40 @@ method_clear(VALUE self)
   return self;
 }
 
+static VALUE
+method_min(VALUE self)
+{
+  FOR_EACH_ACTIVE_CODEPOINT(return LONG2FIX(cp));
+  return Qnil;
+}
+
+static VALUE
+method_max(VALUE self)
+{
+  cs_cp len;
+  long reverse_idx;
+  cs_ar *cps;
+  cps = fetch_cps(self, &len);
+  for (reverse_idx = len; reverse_idx >= 0; reverse_idx--)
+  {
+    if (tst_cp(cps, len, reverse_idx))
+    {
+      return LONG2FIX(reverse_idx);
+    }
+  }
+  return Qnil;
+}
+
+static VALUE
+method_minmax(VALUE self)
+{
+  VALUE arr;
+  arr = rb_ary_new2(2);
+  rb_ary_push(arr, method_min(self));
+  rb_ary_push(arr, method_max(self));
+  return arr;
+}
+
 #define RETURN_NEW_CS_BASED_ON(condition)            \
   VALUE new_cs;                                      \
   cs_cp cp, alen, blen;                              \
@@ -1204,6 +1238,9 @@ void Init_character_set()
   rb_define_method(cs, "keep_if", method_keep_if, 0);
   rb_define_method(cs, "delete_if", method_delete_if, 0);
   rb_define_method(cs, "clear", method_clear, 0);
+  rb_define_method(cs, "min", method_min, 0);
+  rb_define_method(cs, "max", method_max, 0);
+  rb_define_method(cs, "minmax", method_minmax, 0);
   rb_define_method(cs, "intersection", method_intersection, 1);
   rb_define_method(cs, "&", method_intersection, 1);
   rb_define_method(cs, "union", method_union, 1);

@@ -61,20 +61,26 @@ CharacterSet#used_by?:   246527.7 i/s
        Regexp#match?:    92956.5 i/s - 2.65x  slower
 ```
 ```
-Adding codepoints
+Adding entries
 
     CharacterSet#add:  3102081.7 i/s
        SortedSet#add:  1897464.8 i/s - 1.63x  slower
 ```
 ```
-Deleting codepoints
+Removing entries
 
  CharacterSet#delete:  3240924.1 i/s
     SortedSet#delete:  2887493.9 i/s - 1.12x  slower
 ```
 ```
-Merging sets
+Merging entries
 
   CharacterSet#merge:      536.8 i/s
      SortedSet#merge:       12.5 i/s - 42.78x  slower
+```
+```
+Getting the min and max
+
+ CharacterSet#minmax:  4111960.8 i/s
+    SortedSet#minmax:      756.4 i/s - 5436.39x  slower
 ```
