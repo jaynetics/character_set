@@ -1,2 +1,3 @@
+*.cps linguist-detectable=false
 benchmarks/* linguist-detectable=false
-spec/ruby-spec/* linguist-vendored=true
+spec/ruby-spec/* linguist-vendored
