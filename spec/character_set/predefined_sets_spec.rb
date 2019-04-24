@@ -4,11 +4,16 @@ describe CharacterSet::PredefinedSets do
       expect(CharacterSet.send(name)).to be_frozen
     end
 
+    it 'is not empty' do
+      expect(CharacterSet.send(name)).not_to be_empty
+    end
+
     it 'has an inversion' do
-      orig = CharacterSet.send(name)
-      expect(CharacterSet.send("non_#{name}").size).to eq 0x10F800 - orig.size
-      expect(CharacterSet.send("non_#{name}").intersect?(orig)).to be false
-      expect(CharacterSet.send("non_#{name}")).to be_frozen
+      original = CharacterSet.send(name)
+      inversion = CharacterSet.send("non_#{name}")
+      expect(inversion.size).to eq [0x10F800 - original.size, 0].max
+      expect(inversion).to be_disjoint(original)
+      expect(inversion).to be_frozen
     end
   end
 
@@ -16,9 +21,6 @@ describe CharacterSet::PredefinedSets do
     it 'includes all ASCII codepoints' do
       expect(CharacterSet.ascii.size).to eq 0x80
       expect(CharacterSet.ascii).to include 'a'
-      expect(CharacterSet.ascii).to include '1'
-      # `not_to include` is extremely slow for some reason?!
-      expect(CharacterSet.ascii.include?('ü')).to be false
     end
 
     it_behaves_like :predefined_character_set, :ascii
@@ -27,13 +29,19 @@ describe CharacterSet::PredefinedSets do
   # these tests are slow on java, the one above shall suffice
   next if RUBY_PLATFORM[/java/i]
 
+  describe '::any' do
+    it 'includes all codepoints, including surrogates' do
+      expect(CharacterSet.any.size).to eq 0x110000
+    end
+
+    it_behaves_like :predefined_character_set, :any
+  end
+
   describe '::ascii_alnum' do
     it 'includes all ASCII letters and numbers' do
       expect(CharacterSet.ascii_alnum.size).to eq 62
       expect(CharacterSet.ascii_alnum).to include 'a'
       expect(CharacterSet.ascii_alnum).to include '1'
-      expect(CharacterSet.ascii_alnum.include?('.')).to be false
-      expect(CharacterSet.ascii_alnum.include?('ü')).to be false
     end
 
     it_behaves_like :predefined_character_set, :ascii_alnum
@@ -43,9 +51,7 @@ describe CharacterSet::PredefinedSets do
     it 'includes all ASCII letters' do
       expect(CharacterSet.ascii_letter.size).to eq 52
       expect(CharacterSet.ascii_letter).to include 'a'
-      expect(CharacterSet.ascii_letter.include?('1')).to be false
-      expect(CharacterSet.ascii_letter.include?('.')).to be false
-      expect(CharacterSet.ascii_letter.include?('ü')).to be false
+      expect(CharacterSet.ascii_letter).to include 'A'
     end
 
     it_behaves_like :predefined_character_set, :ascii_letter
@@ -57,7 +63,6 @@ describe CharacterSet::PredefinedSets do
       expect(CharacterSet.bmp).to include 'a'
       expect(CharacterSet.bmp).to include '1'
       expect(CharacterSet.bmp).to include 'ü'
-      expect(CharacterSet.bmp.include?(0x10000)).to be false
     end
 
     it_behaves_like :predefined_character_set, :bmp
@@ -74,7 +79,6 @@ describe CharacterSet::PredefinedSets do
 
   describe '::emoji' do
     it 'includes all emoji codepoints' do
-      expect(CharacterSet.emoji.include?('a')).to be false
       expect(CharacterSet.emoji).to include '😋'
     end
 

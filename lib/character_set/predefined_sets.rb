@@ -14,6 +14,7 @@ class CharacterSet
       RUBY
     end
 
+    alias all                      any
     alias ascii_letters            ascii_letter
     alias basic_multilingual_plane bmp
     alias blank                    whitespace
