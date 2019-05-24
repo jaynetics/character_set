@@ -722,7 +722,9 @@ active_cp_count_in_section(VALUE set, cs_cp from, cs_cp upto)
 static VALUE
 method_ext_count_in_section(VALUE self, VALUE from, VALUE upto)
 {
-  return active_cp_count_in_section(self, FIX2ULONG(from), FIX2ULONG(upto));
+  cs_cp count;
+  count = active_cp_count_in_section(self, FIX2ULONG(from), FIX2ULONG(upto));
+  return LONG2FIX(count);
 }
 
 static inline VALUE
