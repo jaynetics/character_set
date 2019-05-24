@@ -1,3 +1,10 @@
+require 'simplecov'
+SimpleCov.start
+
+ENV['CODECOV_TOKEN'] = '05e59458-baf5-48e5-9351-159d27ccf1f3'
+require 'codecov'
+SimpleCov.formatter = SimpleCov::Formatter::Codecov
+
 require 'bundler/setup'
 require 'character_set'
 require 'character_set/pure'
