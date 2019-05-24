@@ -72,8 +72,8 @@ class CharacterSet
           true
         elsif other.instance_of?(self.class)
           @__set == other.instance_variable_get(:@__set)
-        elsif other.is_a?(self.class) && size == other.size
-          other.all? { |cp| @__set.include?(cp) }
+        elsif other.is_a?(CharacterSet) || other.is_a?(CharacterSet::Pure)
+          size == other.size && other.all? { |cp| @__set.include?(cp) }
         else
           false
         end

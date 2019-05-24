@@ -2,6 +2,7 @@
 
 [![Gem Version](https://badge.fury.io/rb/character_set.svg)](http://badge.fury.io/rb/character_set)
 [![Build Status](https://travis-ci.org/jaynetics/character_set.svg?branch=master)](https://travis-ci.org/jaynetics/character_set)
+[![codecov](https://codecov.io/gh/jaynetics/character_set/branch/master/graph/badge.svg)](https://codecov.io/gh/jaynetics/character_set)
 
 This is a C-extended Ruby gem to work with sets of Unicode codepoints. It can read and write these sets in various formats and implements the stdlib `Set` interface for them.
 
