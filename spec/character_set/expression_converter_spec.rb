@@ -23,6 +23,32 @@ describe CharacterSet::ExpressionConverter do
       expect { result(/abc/) }.to raise_error(described_class::Error)
     end
 
+    it 'supports the match-all dot' do
+      expect(result(/./)).to eq CharacterSet.unicode
+    end
+
+    it 'supports types' do
+      expect(result(/\d/)).to eq CharacterSet.of('0123456789')
+      expect(result(/\h/)).to eq CharacterSet.from_ranges(48..57, 65..70, 97..102)
+      expect(result(/\w/)).to eq CharacterSet.from_ranges(48..57, 65..90, 95..95, 97..122)
+      expect(result(/\s/)).to eq CharacterSet.from_ranges(9..13, 32..32)
+    end
+
+    it 'supports negative types' do
+      expect(result(/\D/)).to eq CharacterSet.of('0123456789').inversion
+    end
+
+    it 'supports types with the full unicode range' do
+      expect(result(/(?u:\s)/)).to eq CharacterSet.from_ranges(
+        9..13, 32..32, 133..133, 160..160, 5760..5760, 8192..8202,
+        8232..8233, 8239..8239, 8287..8287, 12288..12288
+      )
+    end
+
+    it 'raises when passed an unsupported type' do
+      expect { result(/\R/) }.to raise_error(described_class::Error)
+    end
+
     it 'supports ranges' do
       expect(result(/[a-c]/)).to eq CharacterSet['a', 'b', 'c']
     end
@@ -43,12 +69,33 @@ describe CharacterSet::ExpressionConverter do
       expect(result(/[[:ascii:]]/)).to eq CharacterSet.from_ranges(0x00..0x7F)
     end
 
+    it 'supports posix classes with ascii encoding' do
+      expect(result(/[[:digit:]]/)).to be > CharacterSet.of('0123456789')
+      expect(result(/(?a:[[:digit:]])/)).to eq CharacterSet.of('0123456789')
+    end
+
     it 'supports capturing, passive, named, atomic and option groups' do
       expect(result(/((?:(?<foo>(?>(?m:[a-c])))))/)).to eq CharacterSet['a', 'b', 'c']
     end
 
+    it 'supports empty groups' do
+      expect(result(/()/)).to eq CharacterSet[]
+    end
+
+    it 'raises for groups containing more than one expression' do
+      expect { result(/(\d\w)/) }.to raise_error(described_class::Error)
+    end
+
     it 'supports alternations' do
       expect(result(/(a|[b-d])/)).to eq CharacterSet['a', 'b', 'c', 'd']
+    end
+
+    it 'supports alternations with empty branches' do
+      expect(result(/(|[b-d])/)).to eq CharacterSet['b', 'c', 'd']
+    end
+
+    it 'raises for alternations branches containing more than one expression' do
+      expect { result(/(a|\d\w)/) }.to raise_error(described_class::Error)
     end
 
     it 'raises for unsupported expressions' do

@@ -31,29 +31,23 @@ class CharacterSet
       when Regexp::Expression::CharacterType::Any
         CharacterSet.unicode
 
-      when Regexp::Expression::CharacterType::Digit
-        CharacterSet.from_ranges(48..57)
-
-      when Regexp::Expression::CharacterType::NonDigit
-        CharacterSet.from_ranges(48..57).inversion
-
-      when Regexp::Expression::CharacterType::Hex
-        CharacterSet.from_ranges(48..57, 65..70, 97..102)
-
-      when Regexp::Expression::CharacterType::NonHex
-        CharacterSet.from_ranges(48..57, 65..70, 97..102).inversion
-
-      when Regexp::Expression::CharacterType::Space
-        CharacterSet["\t", "\n", "\v", "\f", "\r", "\x20"]
-
-      when Regexp::Expression::CharacterType::NonSpace
-        CharacterSet["\t", "\n", "\v", "\f", "\r", "\x20"].inversion
-
-      when Regexp::Expression::CharacterType::Word
-        CharacterSet.from_ranges(48..57, 65..90, 95..95, 97..122)
-
-      when Regexp::Expression::CharacterType::NonWord
-        CharacterSet.from_ranges(48..57, 65..90, 95..95, 97..122).inversion
+      when Regexp::Expression::CharacterType::Base
+        /(?<negative>non)?(?<base_name>.+)/ =~ expression.token
+        content =
+          if expression.unicode_classes?
+            # in u-mode, type shortcuts match the same as \p{<long type name>}
+            CharacterSet.of_property(base_name)
+          else
+            # in normal mode, types match only ascii chars
+            case base_name.to_sym
+            when :digit then CharacterSet.from_ranges(48..57)
+            when :hex   then CharacterSet.from_ranges(48..57, 65..70, 97..102)
+            when :space then CharacterSet.from_ranges(9..13, 32..32)
+            when :word  then CharacterSet.from_ranges(48..57, 65..90, 95..95, 97..122)
+            else raise Error, "Unsupported CharacterType #{base_name}"
+            end
+          end
+        negative ? content.inversion : content
 
       when Regexp::Expression::EscapeSequence::CodepointList
         CharacterSet.new(expression.codepoints)
@@ -93,6 +87,9 @@ class CharacterSet
       when Regexp::Expression::UnicodeProperty::Base,
            Regexp::Expression::PosixClass
         content = CharacterSet.of_property(expression.token)
+        if expression.type == :posixclass && expression.ascii_classes?
+          content = content.ascii_part
+        end
         expression.negative? ? content.inversion : content
 
       when Regexp::Expression::Base
