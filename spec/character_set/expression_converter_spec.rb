@@ -39,10 +39,7 @@ describe CharacterSet::ExpressionConverter do
     end
 
     it 'supports types with the full unicode range' do
-      expect(result(/(?u:\s)/)).to eq CharacterSet.from_ranges(
-        9..13, 32..32, 133..133, 160..160, 5760..5760, 8192..8202,
-        8232..8233, 8239..8239, 8287..8287, 12288..12288
-      )
+      expect(result(/(?u:\s)/)).to be > CharacterSet.from_ranges(9..13, 32..32)
     end
 
     it 'raises when passed an unsupported type' do
