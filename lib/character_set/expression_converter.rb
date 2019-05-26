@@ -26,7 +26,7 @@ class CharacterSet
 
       when Regexp::Expression::CharacterSet::Range
         start, finish = expression.map { |subexp| convert(subexp) }
-        CharacterSet.from_ranges((start.min)..(finish.max))
+        CharacterSet.new((start.min)..(finish.max))
 
       when Regexp::Expression::CharacterType::Any
         CharacterSet.unicode

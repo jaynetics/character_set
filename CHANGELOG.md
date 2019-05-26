@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 - improved `String` manipulation speed
+- improved initialization and `#merge` speed when passing a large `Range`
 - `#count_in` and `#scan_in` methods for `String` interaction
 - new predefined sets `CharacterSet::any`, `::assigned`, `::surrogate`
 - conversion methods `#assigned_part`, `#valid_part`

@@ -21,16 +21,26 @@ struct cs_data
 #define CS_MSIZE(len) (sizeof(cs_ar) * (len / 8))
 
 static inline void
+add_memspace_for_another_plane(struct cs_data *data)
+{
+  data->cps = ruby_xrealloc(data->cps, CS_MSIZE(data->len + UNICODE_PLANE_SIZE));
+  memset(data->cps + CS_MSIZE(data->len), 0, CS_MSIZE(UNICODE_PLANE_SIZE));
+  data->len += UNICODE_PLANE_SIZE;
+}
+
+static inline void
+ensure_memsize_fits(struct cs_data *data, cs_cp target_cp)
+{
+  while (target_cp >= data->len)
+  {
+    add_memspace_for_another_plane(data);
+  }
+}
+
+static inline void
 set_cp(struct cs_data *data, cs_cp cp)
 {
-  // add space for more unicode planes as needed
-  while (cp >= data->len)
-  {
-    data->cps = ruby_xrealloc(data->cps, CS_MSIZE(data->len + UNICODE_PLANE_SIZE));
-    memset(data->cps + CS_MSIZE(data->len), 0, CS_MSIZE(UNICODE_PLANE_SIZE));
-    data->len += UNICODE_PLANE_SIZE;
-  }
-
+  ensure_memsize_fits(data, cp);
   data->cps[cp >> 3] |= (1 << (cp & 0x07));
 }
 
@@ -481,12 +491,12 @@ cs_merge_cs(VALUE recipient, VALUE source)
   return recipient;
 }
 
-static inline void
-raise_arg_err_unless_valid_as_cp(VALUE object_id)
+static inline cs_cp
+cs_checked_cp(VALUE object_id)
 {
   if (FIXNUM_P(object_id) && object_id > 0 && object_id < 0x220001)
   {
-    return;
+    return FIX2ULONG(object_id);
   }
   rb_raise(rb_eArgError, "CharacterSet members must be between 0 and 0x10FFFF");
 }
@@ -495,8 +505,8 @@ static inline VALUE
 cs_merge_rb_range(VALUE self, VALUE rb_range)
 {
   VALUE from_id, upto_id;
+  cs_cp from_cp, upto_cp, cont_len, rem;
   int excl;
-  cs_cp cp;
   struct cs_data *data;
   data = cs_fetch_data(self);
 
@@ -509,15 +519,30 @@ cs_merge_rb_range(VALUE self, VALUE rb_range)
     upto_id -= 2;
   }
 
-  raise_arg_err_unless_valid_as_cp(from_id);
-  raise_arg_err_unless_valid_as_cp(upto_id);
+  from_cp = cs_checked_cp(from_id);
+  upto_cp = cs_checked_cp(upto_id);
 
-  // TODO: memset whole range, maybe set_cp() with the max first
-  for (/* */; from_id <= upto_id; from_id += 2)
+  if (upto_cp > from_cp && (upto_cp - from_cp > 6))
   {
-    cp = FIX2ULONG(from_id);
-    set_cp(data, cp);
+    // set bits in preceding partially toggled bytes individually
+    for (/* */; (from_cp <= upto_cp) && (from_cp % 8); from_cp++)
+    {
+      set_cp(data, from_cp);
+    }
+    // memset contiguous bits directly
+    cont_len = upto_cp - from_cp + 1;
+    rem = cont_len % 8;
+    ensure_memsize_fits(data, upto_cp);
+    memset(data->cps + CS_MSIZE(from_cp), 0xFF, CS_MSIZE(cont_len - rem) / 8);
+    from_cp = upto_cp - rem + 1;
   }
+
+  // set bits in partially toggled bytes individually
+  for (/* */; from_cp <= upto_cp; from_cp++)
+  {
+    set_cp(data, from_cp);
+  }
+
   return self;
 }
 
@@ -532,8 +557,7 @@ cs_merge_rb_array(VALUE self, VALUE rb_array)
   for (i = 0; i < array_length; i++)
   {
     el = RARRAY_AREF(rb_array, i);
-    raise_arg_err_unless_valid_as_cp(el);
-    set_cp(data, FIX2ULONG(el));
+    set_cp(data, cs_checked_cp(el));
   }
   return self;
 }

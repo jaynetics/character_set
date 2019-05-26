@@ -2,6 +2,8 @@
 
 require 'bundler/setup'
 
+`bundle exec rake compile`
+
 require 'character_set'
 require 'character_set/core_ext'
 require 'character_set/pure'
