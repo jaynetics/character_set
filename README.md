@@ -111,7 +111,7 @@ require 'character_set/core_ext/string_ext'
 
 ### Manipulate
 
-Use any [Ruby Set method](https://ruby-doc.org/stdlib-2.5.1/libdoc/set/rdoc/Set.html), e.g. `#+`, `#-`, `#&`, `#^`, `#intersect?`, `#<`, `#>` etc. to interact with other sets. Use `#add`, `#delete`, `#include?` etc. to change or check for members.
+Use [any Ruby Set method](https://ruby-doc.org/stdlib-2.5.1/libdoc/set/rdoc/Set.html), e.g. `#+`, `#-`, `#&`, `#^`, `#intersect?`, `#<`, `#>` etc. to interact with other sets. Use `#add`, `#delete`, `#include?` etc. to change or check for members.
 
 Where appropriate, methods take both chars and codepoints, e.g.:
 
@@ -126,7 +126,7 @@ CharacterSet['a'].include?(0x61) # => true
 
 ```ruby
 non_a = CharacterSet['a'].inversion
-# => #<CharacterSet (size: 1112064)>
+# => #<CharacterSet (size: 1112063)>
 
 non_a.include?('a') # => false
 non_a.include?('ü') # => true
@@ -139,7 +139,7 @@ CharacterSet['a'].inversion(include_surrogates: true)
 `#case_insensitive` can be used to create a `CharacterSet` where upper/lower case codepoints are supplemented:
 
 ```ruby
-CharacterSet['1', 'a'].case_insensitive # => CharacterSet['1', 'A', 'a']
+CharacterSet['1', 'A'].case_insensitive # => CharacterSet['1', 'A', 'a']
 ```
 
 ### Write
@@ -168,7 +168,7 @@ set.to_s(escape_all: true) { |c| "<#{c.hex}>" } # => "<61>-<63><258><1F929>"
 set.to_s(abbreviate: false) # => "abc\u0258\u{1F929}"
 
 # for full js regex compatibility in case of astral members:
-set.to_s_with_surrogate_alternation # => '(?:[\u0258]|\ud83e\udd29)'
+set.to_s_with_surrogate_alternation # => '(?:[a-c\u0258]|\ud83e\udd29)'
 ```
 
 ### Unicode plane methods
@@ -183,7 +183,7 @@ CharacterSet['a', 'ü', '🤩'].bmp_part # => CharacterSet['a', 'ü']
 CharacterSet['a', 'ü', '🤩'].astral_part # => CharacterSet['🤩']
 CharacterSet['a', 'ü', '🤩'].bmp_ratio # => 0.6666666
 CharacterSet['a', 'ü', '🤩'].planes # => [0, 1]
-CharacterSet.plane(1) # => CharacterSet['🤩']
+CharacterSet['a', 'ü', '🤩'].plane(1) # => CharacterSet['🤩']
 CharacterSet['a', 'ü', '🤩'].member_in_plane?(7) # => false
 CharacterSet::Character.new('a').plane # => 0
 ```
