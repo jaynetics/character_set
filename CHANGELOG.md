@@ -6,20 +6,23 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## UNRELEASED
 
+## [1.3.0] - 2019-04-26
+
 ### Added
 - improved `String` manipulation speed
 - improved initialization and `#merge` speed when passing a large `Range`
+- reduced memory consumption by > 90% for most use cases via dynamic resizing
+  - before, every set instance required 136 KB for codepoints
+  - now, 16 bytes for a CharacterSet in ASCII space, 8 KB for one in BMP space etc.
 - `#count_in` and `#scan_in` methods for `String` interaction
-- new predefined sets `CharacterSet::any`, `::assigned`, `::surrogate`
+- new predefined sets `::any`/`::all`, `::assigned`, `::surrogate`
 - conversion methods `#assigned_part`, `#valid_part`
-- section methods `#plane(n)`, `#ascii_part`, `#ascii_part?`, `#ascii_only?`, `#ascii_ratio`, `#astral_only?`
+- sectioning methods `#ascii_part`, `#plane(n)`
+- section test methods `#ascii_part?`, `#ascii_ratio`, `#ascii_only?`, `#astral_only?`
 
 ### Fixed
-- reduced memory consumption by > 90% for most use cases by dynamic resizing
-  - before, every set instance needed 136 KB
-  - now 16 bytes for a CharacterSet in ASCII space, 8 KB for one in BMP space etc.
+- `#count` now supports passing an argument or block as usual
 - `CharacterSet::Pure#keep_in`, `#delete_in` now preserve the original encoding
-- `#count` now supports passing an argument or block
 
 ## [1.2.0] - 2019-04-02
 
