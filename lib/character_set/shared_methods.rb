@@ -86,6 +86,10 @@ class CharacterSet
           Writer.write(ranges, opts, &block)
         end
 
+        def to_s_with_surrogate_ranges
+          Writer.write_surrogate_ranges(bmp_part.ranges, astral_part.ranges)
+        end
+
         def to_s_with_surrogate_alternation
           Writer.write_surrogate_alternation(bmp_part.ranges, astral_part.ranges)
         end
