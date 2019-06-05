@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## UNRELEASED
 
+### Added
+- improved performance for `#to_s` / `Writer` by avoiding bugged `Range#minmax`
+
 ## [1.3.0] - 2019-04-26
 
 ### Added

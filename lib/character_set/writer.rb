@@ -5,12 +5,17 @@ class CharacterSet
     def write(codepoint_ranges, opts = {}, &block)
       content = codepoint_ranges.map do |range|
         if range.size > 2 && opts[:abbreviate] != false
-          range.minmax.map { |cp| Character.new(cp).escape(opts, &block) }.join('-')
+          bounds = [range.min, range.max]
+          bounds.map { |cp| write_codepoint(cp, opts, &block) }.join('-')
         else
-          range.map { |cp| Character.new(cp).escape(opts, &block) }.join
+          range.map { |cp| write_codepoint(cp, opts, &block) }.join
         end
       end.join
       opts[:in_brackets] ? "[#{content}]" : content
+    end
+
+    def write_codepoint(codepoint, opts = {}, &block)
+      Character.new(codepoint).escape(opts, &block)
     end
 
     def write_surrogate_ranges(bmp_ranges, astral_ranges)
@@ -20,9 +25,8 @@ class CharacterSet
 
       astral_set = astral_ranges.map do |range|
         if range.size > 2
-          min, max = range.minmax
-          minh, minl = surrogate_pair(min)
-          maxh, maxl = surrogate_pair(max)
+          minh, minl = surrogate_pair(range.min)
+          maxh, maxl = surrogate_pair(range.max)
           (minh == maxh ? minh : "[#{minh}-#{maxh}]") + \
             (minl == maxl ? minl : "[#{minl}-#{maxl}]")
         else
@@ -48,7 +52,7 @@ class CharacterSet
 
     def surrogate_pair(astral_codepoint)
       base = astral_codepoint - 0x10000
-      high = ((base / 1024).floor + 0xD800).to_s(16)
+      high = (base / 1024 + 0xD800).to_s(16)
       low  = (base % 1024 + 0xDC00).to_s(16)
       ["\\u#{high}", "\\u#{low}"]
     end
