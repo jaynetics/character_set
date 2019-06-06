@@ -167,8 +167,18 @@ set.to_s(escape_all: true) { |c| "<#{c.hex}>" } # => "<61>-<63><258><1F929>"
 # disable abbreviation (grouping of codepoints in ranges)
 set.to_s(abbreviate: false) # => "abc\u0258\u{1F929}"
 
-# for full js regex compatibility in case of astral members:
-set.to_s_with_surrogate_alternation # => '(?:[a-c\u0258]|\ud83e\udd29)'
+# astral members require some trickery if we want to target environments
+# that are based on UTF-16 or "UCS-2 with surrogates", such as JavaScript.
+set = CharacterSet['a', 'b', '🤩', '🤪', '🤫']
+
+# Use #to_s_with_surrogate_ranges e.g. for JavaScript:
+set.to_s_with_surrogate_ranges
+# => '(?:[ab]|\uD83E[\uDD29-\uDD2B])'
+
+# Or use #to_s_with_surrogate_alternation if such surrogate set pairs
+# don't work in your target environment:
+set.to_s_with_surrogate_alternation
+# => '(?:[ab]|\uD83E\uDD29|\uD83E\uDD2A|\uD83E\uDD2B)'
 ```
 
 ### Unicode plane methods

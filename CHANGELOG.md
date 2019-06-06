@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## UNRELEASED
 
 ### Added
+- `#to_s_with_surrogate_ranges` / `Writer::write_surrogate_ranges`
+  - allows for much shorter astral plane representations e.g. in JavaScript
+  - thanks to https://github.com/singpolyma for the suggestion and groundwork (#1)
 - improved performance for `#to_s` / `Writer` by avoiding bugged `Range#minmax`
 
 ## [1.3.0] - 2019-04-26

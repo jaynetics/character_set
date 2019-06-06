@@ -31,28 +31,33 @@ describe CharacterSet::Writer do
   end
 
   describe '::write_surrogate_ranges' do
-    def result(bmp_ranges, astral_codepoints)
-      Writer.write_surrogate_ranges(bmp_ranges, astral_codepoints)
+    def result(bmp_ranges, astral_ranges)
+      Writer.write_surrogate_ranges(bmp_ranges, astral_ranges)
     end
 
     it 'turns bmp and astral ranges into an alternation expression' do
       expect(result([97..99], [0x1A60B..0x1F60F]))
-        .to eq '(?:[\\ud829-\\ud83d][\\ude0b-\\ude0f]|[a-c])'
+        .to eq '(?:[a-c]|\uD829[\uDE0B-\uDFFF]|[\uD82A-\uD83C][\uDC00-\uDFFF]|\uD83D[\uDC00-\uDE0F])'
     end
 
     it 'turns bmp and short astral ranges into an alternation expression' do
-      expect(result([97..99], [0x1F60B..0x1F60C]))
-        .to eq '(?:\ud83d\ude0b|\ud83d\ude0c|[a-c])'
+      expect(result([97..99], [0x1F60B..0x1F60B]))
+        .to eq '(?:[a-c]|\uD83D\uDE0B)'
     end
 
-    it 'does not use a range for single high surrogate' do
+    it 'does not use a bracket expression for single high surrogates' do
       expect(result([97..99], [0x1F60B..0x1F60F]))
-        .to eq '(?:\\ud83d[\\ude0b-\\ude0f]|[a-c])'
+        .to eq '(?:[a-c]|\uD83D[\uDE0B-\uDE0F])'
     end
 
     it 'returns just a bracket expression String if there are no astral bits' do
       expect(result([97..99], []))
         .to eq '[a-c]'
+    end
+
+    it 'returns an empty expression if there are neither bmp nor astral bits' do
+      expect(result([], []))
+        .to eq '(?:)'
     end
 
     it 'uses the js escape format for not universally printable chars' do
@@ -61,24 +66,29 @@ describe CharacterSet::Writer do
     end
 
     it 'doesnt include an empty bracket expression if there are no bmp bits' do
-      expect(result([], [0x1F60B..0x1F60F]))
-        .to eq '(?:\\ud83d[\\ude0b-\\ude0f])'
+      expect(result([], [0x1F60B..0x1F60c]))
+        .to eq '(?:\uD83D[\uDE0B\uDE0C])'
     end
   end
 
   describe '::write_surrogate_alternation' do
-    def result(bmp_ranges, astral_codepoints)
-      Writer.write_surrogate_alternation(bmp_ranges, astral_codepoints)
+    def result(bmp_ranges, astral_ranges)
+      Writer.write_surrogate_alternation(bmp_ranges, astral_ranges)
     end
 
     it 'turns bmp and astral ranges into an alternation expression' do
       expect(result([97..99], [0x1F60B..0x1F60C]))
-        .to eq '(?:[a-c]|\ud83d\ude0b|\ud83d\ude0c)'
+        .to eq '(?:[a-c]|\uD83D\uDE0B|\uD83D\uDE0C)'
     end
 
     it 'returns just a bracket expression String if there are no astral bits' do
       expect(result([97..99], []))
         .to eq '[a-c]'
+    end
+
+    it 'returns an empty expression if there are neither bmp nor astral bits' do
+      expect(result([], []))
+        .to eq '(?:)'
     end
 
     it 'uses the js escape format for not universally printable chars' do
@@ -88,7 +98,7 @@ describe CharacterSet::Writer do
 
     it 'doesnt include an empty bracket expression if there are no bmp bits' do
       expect(result([], [0x1F60B..0x1F60C]))
-        .to eq '(?:\ud83d\ude0b|\ud83d\ude0c)'
+        .to eq '(?:\uD83D\uDE0B|\uD83D\uDE0C)'
     end
   end
 end
