@@ -43,7 +43,7 @@ class CharacterSet
 
         # compress high surrogate codepoint ranges with common low range half
         with_common_lo = halves.group_by(&:last).map do |lo_range, pairs|
-          hi_ranges = pairs.map(&:first).sort_by(&:min)
+          hi_ranges = pairs.map(&:first)
           compressed_hi_ranges = hi_ranges.each_with_object([]) do |range, arr|
             prev = arr.last
             if prev.nil? || prev.max + 1 < range.min # first or gap
@@ -62,23 +62,29 @@ class CharacterSet
       end
 
       def surrogate_half_ranges(astral_range)
-        prev_lo = nil
-        astral_range.each_with_object([]) do |cp, sets|
-          hi, lo = surrogate_pair_codepoints(cp)
-          if prev_lo.nil? || lo < prev_lo # first or lapping, start new set
-            sets << [hi..hi, lo..lo]
-          else # continuous codepoints, expand previous set
-            prev_set = sets[-1]
-            sets[-1] = [(prev_set[0].min)..hi, (prev_set[1].min)..lo]
-          end
-          prev_lo = lo
-        end
+        hi_min, lo_min = surrogate_pair_codepoints(astral_range.min)
+        hi_max, lo_max = surrogate_pair_codepoints(astral_range.max)
+        hi_count = 1 + hi_max - hi_min
+        return [[hi_min..hi_min, lo_min..lo_max]] if hi_count == 1
+
+        ranges = []
+
+        # first high surrogate might be partially covered (if lo_min > 0xDC00)
+        ranges << [hi_min..hi_min, lo_min..0xDFFF]
+
+        # any high surrogates in between are fully covered
+        ranges << [(hi_min + 1)..(hi_max - 1), 0xDC00..0xDFFF] if hi_count > 2
+
+        # last high surrogate might be partially covered (if lo_max < 0xDFFF)
+        ranges << [hi_max..hi_max, 0xDC00..lo_max]
+
+        ranges
       end
 
       def surrogate_pair_codepoints(astral_codepoint)
         base = astral_codepoint - 0x10000
-        high = (base / 1024 + 0xD800)
-        low  = (base % 1024 + 0xDC00)
+        high = base / 1024 + 0xD800
+        low  = base % 1024 + 0xDC00
         [high, low]
       end
 
