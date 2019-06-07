@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   - thanks to https://github.com/singpolyma for the suggestion and groundwork (#1)
 - improved performance for `#to_s` / `Writer` by avoiding bugged `Range#minmax`
 
+### Fixed
+- '/' is now escaped by default when stringifying so as to work with //-regexp syntax
+
 ## [1.3.0] - 2019-04-26
 
 ### Added

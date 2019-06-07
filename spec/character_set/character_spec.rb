@@ -18,37 +18,43 @@ describe CharacterSet::Character do
 
   describe '#to_s' do
     it 'returns the character literal' do
-      expect(Character.new(97).to_s).to eq 'a'
-      expect(Character.new(128_523).to_s).to eq '😋'
+      expect(Character.new('a').to_s).to eq 'a'
+      expect(Character.new('😋').to_s).to eq '😋'
     end
   end
 
   describe '#hex' do
     it 'returns the hex value of the codepoint' do
-      expect(Character.new(97).hex).to eq '61'
-      expect(Character.new(128_523).hex).to eq '1F60B'
+      expect(Character.new('a').hex).to eq '61'
+      expect(Character.new('😋').hex).to eq '1F60B'
     end
   end
 
   describe '#escape' do
     context 'if the codepoint is printable' do
       it 'it returns a literal if escape_all is not set' do
-        expect(Character.new(97).escape).to eq 'a'
+        expect(Character.new('a').escape).to eq 'a'
       end
 
       it 'it escapes it anyway if escape_all is set' do
-        expect(Character.new(97).escape(escape_all: true)).to eq '\x61'
+        expect(Character.new('a').escape(escape_all: true)).to eq '\x61'
       end
     end
 
     context 'if the codepoint is not generally printable' do
       it 'it escapes it by default' do
-        expect(Character.new(128_523).escape).to eq '\u{1F60B}'
+        expect(Character.new('-' ).escape).to eq '\x2D'
+        expect(Character.new('/' ).escape).to eq '\x2F'
+        expect(Character.new('[' ).escape).to eq '\x5B'
+        expect(Character.new('\\').escape).to eq '\x5C'
+        expect(Character.new(']' ).escape).to eq '\x5D'
+        expect(Character.new('^' ).escape).to eq '\x5E'
+        expect(Character.new('😋').escape).to eq '\u{1F60B}'
       end
 
       it 'it returns a literal anyway with format: raw/literal' do
-        expect(Character.new(128_523).escape(format: :raw)).to eq '😋'
-        expect(Character.new(128_523).escape(format: :literal)).to eq '😋'
+        expect(Character.new('😋').escape(format: :raw)).to eq '😋'
+        expect(Character.new('😋').escape(format: :literal)).to eq '😋'
       end
     end
 
@@ -61,7 +67,7 @@ describe CharacterSet::Character do
 
       it 'returns \u{...} escapes for astral chars' do
         [nil, ''] + %w[default es6 esnext rb ruby].each do |f|
-          expect(Character.new(128_523).escape(format: f)).to eq '\u{1F60B}'
+          expect(Character.new('😋').escape(format: f)).to eq '\u{1F60B}'
         end
       end
     end
@@ -75,7 +81,7 @@ describe CharacterSet::Character do
 
       it 'raises for astral chars' do
         %w[java javascript js].each do |f|
-          expect { Character.new(128_523).escape(format: f) }
+          expect { Character.new('😋').escape(format: f) }
             .to raise_error(RuntimeError,
                             "#{f} does not support escaping astral value 1F60B")
         end
@@ -91,7 +97,7 @@ describe CharacterSet::Character do
 
       it 'returns \U escapes filled to 8 places for astral chars' do
         %w[capitalizableu c# d python].each do |f|
-          expect(Character.new(128_523).escape(format: f)).to eq '\U0001F60B'
+          expect(Character.new('😋').escape(format: f)).to eq '\U0001F60B'
         end
       end
     end
@@ -100,7 +106,7 @@ describe CharacterSet::Character do
       it 'returns U+ escapes filled to at least 4 places' do
         %w[u+ uplus].each do |f|
           expect(Character.new(600).escape(format: f)).to eq 'U+0258'
-          expect(Character.new(128_523).escape(format: f)).to eq 'U+1F60B'
+          expect(Character.new('😋').escape(format: f)).to eq 'U+1F60B'
         end
       end
     end

@@ -1,7 +1,7 @@
 class CharacterSet
   class Character
     ENCODING = 'utf-8'.freeze
-    SAFELY_PRINTABLE = (0x21..0x7E).to_a - ['-', '[', '\\', ']', '^'].map(&:ord)
+    SAFELY_PRINTABLE = (0x21..0x7E).to_a - %w(- / [ \\ ] ^).map(&:ord)
 
     attr_accessor :codepoint
 
