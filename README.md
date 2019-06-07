@@ -40,7 +40,7 @@ CharacterSet.parse('[a-c]')
 CharacterSet.parse('\U00000061-\U00000063')
 ```
 
-If the gems [`regexp_parser`](https://github.com/ammar/regexp_parser) and [`regexp_property_values`](https://github.com/jaynetics/regexp_property_values) are installed, `::of_regexp` and `::of_property` can also be used. `::of_regexp` can handle intersections, negations, and set nesting.
+If the gems [`regexp_parser`](https://github.com/ammar/regexp_parser) and [`regexp_property_values`](https://github.com/jaynetics/regexp_property_values) are installed, `::of_regexp` and `::of_property` can also be used. `::of_regexp` can handle intersections, negations, and set nesting. Regexp's `i`-flag is ignored; call `#case_insensitive` on the result if needed.
 
 ```ruby
 CharacterSet.of_property('Thai') # => #<CharacterSet (size: 86)>
