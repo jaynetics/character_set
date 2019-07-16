@@ -5,8 +5,9 @@ shared_examples :character_set_of_property do |variant|
       .to eq '0123456789ABCDEFabcdef'
   end
 
-  it 'raises ArgumentError for unknown property names' do
-    expect { variant.of_property('foobar') }.to raise_error(ArgumentError)
+  it 'raises for unknown property names' do
+    expect { variant.of_property('foobar') }
+      .to raise_error(RegexpPropertyValues::Error)
   end
 end
 

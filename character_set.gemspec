@@ -28,7 +28,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'rake', '~> 12.0'
   s.add_development_dependency 'rake-compiler', '~> 1.0'
   s.add_development_dependency 'range_compressor', '~> 1.0'
-  s.add_development_dependency 'regexp_parser', '~> 1.3'
-  s.add_development_dependency 'regexp_property_values', '~> 0.3.5'
+  s.add_development_dependency 'regexp_parser', '~> 1.6'
+  s.add_development_dependency 'regexp_property_values', '~> 1.0'
   s.add_development_dependency 'rspec', '~> 3.8'
 end
