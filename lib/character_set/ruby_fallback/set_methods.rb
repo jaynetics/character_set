@@ -1,7 +1,9 @@
 class CharacterSet
   module RubyFallback
     module SetMethods
-      Enumerable.instance_methods.concat(%w[empty? length size]).each do |mthd|
+      (Enumerable.instance_methods -
+        %i[include? member? to_a] +
+        %i[empty? length size]).each do |mthd|
         class_eval <<-RUBY, __FILE__, __LINE__ + 1
           def #{mthd}(*args, &block)
             @__set.#{mthd}(*args, &block)
@@ -9,7 +11,7 @@ class CharacterSet
         RUBY
       end
 
-      %w[< <= > >= disjoint? intersect? proper_subset? proper_superset?
+      %i[< <= > >= disjoint? intersect? proper_subset? proper_superset?
          subset? superset?].each do |mthd|
         class_eval <<-RUBY, __FILE__, __LINE__ + 1
           def #{mthd}(enum, &block)
@@ -21,7 +23,7 @@ class CharacterSet
         RUBY
       end
 
-      %w[<< === add add? clear collect! delete delete? delete_if
+      %i[<< === add add? clear collect! delete delete? delete_if
          each filter! hash include? map! member? keep_if reject!
          select! subtract].each do |mthd|
         class_eval <<-RUBY, __FILE__, __LINE__ + 1
@@ -32,7 +34,7 @@ class CharacterSet
         RUBY
       end
 
-      %w[& + - ^ | difference intersection union].each do |mthd|
+      %i[& + - ^ | difference intersection union].each do |mthd|
         class_eval <<-RUBY, __FILE__, __LINE__ + 1
           def #{mthd}(enum, &block)
             if enum.respond_to?(:map)
