@@ -45,15 +45,6 @@ class CharacterSet
         RUBY
       end
 
-      %w[taint untaint].each do |mthd|
-        class_eval <<-RUBY, __FILE__, __LINE__ + 1
-          def #{mthd}
-            @__set.#{mthd}
-            super
-          end
-        RUBY
-      end
-
       unless RUBY_PLATFORM[/java/i]
         def freeze
           @__set.to_a

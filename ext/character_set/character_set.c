@@ -1241,8 +1241,6 @@ cs_apply_to_str(VALUE set, VALUE str, int delete, int bang)
   else
   {
     RB_OBJ_WRITE(new_str_buf, &(RBASIC(new_str_buf))->klass, rb_obj_class(str));
-    // slightly cumbersome approach needed for compatibility with Ruby < 2.3:
-    RBASIC(new_str_buf)->flags |= (RBASIC(str)->flags & (FL_TAINT));
     str = new_str_buf;
   }
 

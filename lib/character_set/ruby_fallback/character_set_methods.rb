@@ -121,10 +121,9 @@ class CharacterSet
       end
 
       def make_new_str(original, &block)
-        new_string = str!(original)
+        str!(original)
           .each_codepoint
           .each_with_object(''.encode(original.encoding), &block)
-        original.tainted? ? new_string.taint : new_string
       end
     end
   end

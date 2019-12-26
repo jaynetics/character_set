@@ -26,13 +26,6 @@ shared_examples :character_set_keep_in_bang do |variant|
     expect(variant[97, 98, 99].keep_in!('abz')).to eq 'ab'
   end
 
-  it 'preserves the taintedness of the original string' do
-    tainted_string = 'bar'.taint
-    untainted_string = 'bar'
-    expect(variant[97].keep_in!(tainted_string).tainted?).to be true
-    expect(variant[97].keep_in!(untainted_string).tainted?).to be false
-  end
-
   it 'raises an ArgumentError if passed a non-String' do
     expect { variant[].keep_in!(false) }.to raise_error(ArgumentError)
     expect { variant[].keep_in!(nil) }.to raise_error(ArgumentError)

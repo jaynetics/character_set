@@ -47,13 +47,6 @@ shared_examples :character_set_delete_in do |variant|
     end
   end
 
-  it 'preserves the taintedness of the original string' do
-    tainted_string = 'bar'.taint
-    untainted_string = 'bar'
-    expect(variant[97].delete_in(tainted_string).tainted?).to be true
-    expect(variant[97].delete_in(untainted_string).tainted?).to be false
-  end
-
   it 'raises an ArgumentError if passed a non-String' do
     expect { variant[].delete_in(false) }.to raise_error(ArgumentError)
     expect { variant[].delete_in(nil) }.to raise_error(ArgumentError)
