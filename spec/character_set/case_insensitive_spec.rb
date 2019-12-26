@@ -14,7 +14,7 @@ shared_examples :character_set_case_insensitive do |variant|
 
     it 'ignores mappings to multiple codepoints' do
       # "ﬃ".swapcase # => "FFI" # 3 codepoints
-      expect(variant['ﬃ']).to eq variant['ﬃ']
+      expect(variant['ﬃ'].case_insensitive).to eq variant['ﬃ']
     end
   end
 end
