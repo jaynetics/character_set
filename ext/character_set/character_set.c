@@ -1074,7 +1074,7 @@ cs_method_count_in(VALUE self, VALUE str)
   data = cs_fetch_data(self);
   count = 0;
   each_cp(str, count_str_cp, data->cps, data->len, data, &count);
-  return INT2NUM(count);
+  return INT2NUM((int)count);
 }
 
 static inline int
