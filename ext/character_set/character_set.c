@@ -216,6 +216,7 @@ cs_method_hash(VALUE self)
   cs_cp cp, len, hash, four_byte_value;
   cs_ar *cps;
   cps = cs_fetch_cps(self, &len);
+  four_byte_value = 0;
 
   hash = 17;
   for (cp = 0; cp < len; cp++)
