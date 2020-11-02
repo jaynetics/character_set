@@ -1,9 +1,11 @@
-require 'simplecov'
-SimpleCov.start
+if ENV['CI'] && RUBY_VERSION.start_with?('2.7')
+  require 'simplecov'
+  SimpleCov.start
 
-ENV['CODECOV_TOKEN'] = '05e59458-baf5-48e5-9351-159d27ccf1f3'
-require 'codecov'
-SimpleCov.formatter = SimpleCov::Formatter::Codecov
+  ENV['CODECOV_TOKEN'] = '05e59458-baf5-48e5-9351-159d27ccf1f3'
+  require 'codecov'
+  SimpleCov.formatter = SimpleCov::Formatter::Codecov
+end
 
 require 'bundler/setup'
 require 'character_set'
