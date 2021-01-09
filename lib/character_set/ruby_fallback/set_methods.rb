@@ -24,7 +24,7 @@ class CharacterSet
       end
 
       %i[<< add add? clear collect! delete delete? delete_if
-         each filter! hash map! keep_if reject!
+         each filter! map! keep_if reject!
          select! subtract].each do |mthd|
         class_eval <<-RUBY, __FILE__, __LINE__ + 1
           def #{mthd}(*args, &block)
@@ -83,7 +83,13 @@ class CharacterSet
 
       def eql?(other)
         return false unless other.is_a?(self.class)
-        @__set.eql?(other.instance_variable_get(:@__set))
+        # revert if https://github.com/knu/sorted_set/issues/3 is resolved
+        hash == other.hash
+      end
+
+      # revert if https://github.com/knu/sorted_set/issues/3 is resolved
+      def hash
+        @__set.to_a.hash
       end
 
       def initialize_dup(orig)
