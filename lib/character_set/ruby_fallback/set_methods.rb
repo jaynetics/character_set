@@ -23,13 +23,22 @@ class CharacterSet
         RUBY
       end
 
-      %i[<< === add add? clear collect! delete delete? delete_if
-         each filter! hash include? map! member? keep_if reject!
+      %i[<< add add? clear collect! delete delete? delete_if
+         each filter! hash map! keep_if reject!
          select! subtract].each do |mthd|
         class_eval <<-RUBY, __FILE__, __LINE__ + 1
           def #{mthd}(*args, &block)
             result = @__set.#{mthd}(*args, &block)
             result.is_a?(Set) ? self : result
+          end
+        RUBY
+      end
+
+      # revert if https://github.com/knu/sorted_set/issues/2 is resolved
+      %i[=== include? member?].each do |mthd|
+        class_eval <<-RUBY, __FILE__, __LINE__ + 1
+          def #{mthd}(*args, &block)
+            !!@__set.#{mthd}(*args, &block)
           end
         RUBY
       end
