@@ -151,7 +151,7 @@ class CharacterSet
         end
 
         def divide(&func)
-          require 'set'
+          CharacterSet.require_optional_dependency('set', __method__)
           Set.new(to_a).divide(&func)
         end
       RUBY

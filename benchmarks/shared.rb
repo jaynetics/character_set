@@ -3,7 +3,11 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 
 require 'benchmark/ips'
 require 'character_set'
-require 'set'
+if RUBY_VERSION.to_f >= 3.0 && !RUBY_PLATFORM[/java/i]
+  require 'sorted_set'
+else
+  require 'set'
+end
 
 def benchmark(caption: nil, cases: {})
   puts caption

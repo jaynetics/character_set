@@ -22,6 +22,13 @@ Gem::Specification.new do |s|
 
   s.required_ruby_version = '>= 2.1.0'
 
+  # SortedSet, needed for RubyFallback, was moved to a gem in Ruby 3.
+  # This dependency is only used if the C extension is unavailable.
+  # JRuby has it in the stdlib.
+  if RUBY_VERSION.to_f >= 3.0 && !RUBY_PLATFORM[/java/i]
+    s.add_dependency 'sorted_set', '~> 1.0'
+  end
+
   s.add_development_dependency 'benchmark-ips', '~> 2.7'
   s.add_development_dependency 'get_process_mem', '~> 0.2.3'
   s.add_development_dependency 'rake', '~> 13.0'
