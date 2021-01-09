@@ -1195,7 +1195,7 @@ cs_apply_to_str(VALUE set, VALUE str, int delete, int bang)
     return rb_str_dup(str);
   }
 
-  new_str_buf = rb_str_buf_new(orig_len);
+  new_str_buf = rb_str_buf_new(orig_len + 30); // len + margin
   str_enc = rb_enc_get(str);
   rb_enc_associate(new_str_buf, str_enc);
   rb_str_modify(new_str_buf);
