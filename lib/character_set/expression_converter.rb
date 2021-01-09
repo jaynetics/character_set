@@ -5,7 +5,7 @@ class CharacterSet
     Error = Class.new(ArgumentError)
 
     def convert(expression)
-      CharacterSet.require_optional_dependency('regexp_parser')
+      CharacterSet.require_optional_dependency('regexp_parser', __method__)
 
       case expression
       when Regexp::Expression::Root

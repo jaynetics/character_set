@@ -22,14 +22,14 @@ class CharacterSet
           end
 
           def of_property(property_name)
-            require_optional_dependency('regexp_property_values')
+            require_optional_dependency('regexp_property_values', __method__)
 
             property = RegexpPropertyValues[property_name.to_s]
             from_ranges(*property.matched_ranges)
           end
 
           def of_regexp(regexp)
-            require_optional_dependency('regexp_parser')
+            require_optional_dependency('regexp_parser', __method__)
 
             root = ::Regexp::Parser.parse(regexp)
             of_expression(root)
@@ -39,16 +39,12 @@ class CharacterSet
             ExpressionConverter.convert(expression)
           end
 
-          def require_optional_dependency(name)
+          def require_optional_dependency(name, method)
             required_optional_dependencies[name] ||= begin
               require name
               true
             rescue ::LoadError
-              entry_point = caller_locations.reverse.find do |loc|
-                loc.absolute_path.to_s.include?('/lib/character_set')
-              end
-              method = entry_point && entry_point.label
-              raise LoadError, 'You must the install the optional dependency '\
+              raise LoadError, 'You must install the optional dependency '\
                                "'\#{name}' to use the method `\#{method}'."
             end
           end
