@@ -1,86 +1,86 @@
-Results of `rake:benchmark` on ruby 2.6.2p47 (2019-03-13 revision 67232) [x86_64-darwin18]
+Results of `rake:benchmark` on ruby 3.0.0p0 (2020-12-25 revision 95aff21468) [x86_64-darwin19]
 
 ```
 Counting non-letters
 
-CharacterSet#count_in: 12253693.8 i/s
-        String#count:  1737741.7 i/s - 7.05x  slower
+CharacterSet#count_in:  9472902.2 i/s
+        String#count:  2221799.9 i/s - 4.26x slower
 ```
 ```
 Detecting non-whitespace
 
- CharacterSet#cover?: 14058351.9 i/s
-       Regexp#match?:  7907608.1 i/s - 1.78x  slower
+ CharacterSet#cover?: 12388427.2 i/s
+       Regexp#match?:  7901676.8 i/s - 1.57x slower
 ```
 ```
 Detecting non-letters
 
- CharacterSet#cover?: 13341301.6 i/s
-       Regexp#match?:  5187453.3 i/s - 2.57x  slower
+ CharacterSet#cover?: 12263689.1 i/s
+       Regexp#match?:  4940889.9 i/s - 2.48x slower
 ```
 ```
 Removing whitespace
 
-CharacterSet#delete_in:  2523184.0 i/s
-         String#gsub:   225804.7 i/s - 11.17x  slower
+CharacterSet#delete_in:  2406722.6 i/s
+         String#gsub:   235760.3 i/s - 10.21x slower
 ```
 ```
 Removing whitespace, emoji and umlauts
 
-CharacterSet#delete_in:  1712208.6 i/s
-         String#gsub:   278508.8 i/s - 6.15x  slower
+CharacterSet#delete_in:  1653607.6 i/s
+         String#gsub:   272782.9 i/s - 6.06x slower
 ```
 ```
 Removing non-whitespace
 
-CharacterSet#keep_in:  2760158.1 i/s
-         String#gsub:   232797.7 i/s - 11.86x  slower
+CharacterSet#keep_in:  2671038.2 i/s
+         String#gsub:   242551.0 i/s - 11.01x slower
 ```
 ```
 Extracting emoji
 
-CharacterSet#keep_in:  1775758.8 i/s
-         String#gsub:   217649.9 i/s - 8.16x  slower
+CharacterSet#keep_in:  1726496.5 i/s
+         String#gsub:   215609.2 i/s - 8.01x slower
 ```
 ```
 Extracting emoji to an Array
 
-   CharacterSet#scan:  2579030.8 i/s
-         String#scan:   545107.0 i/s - 4.73x  slower
+   CharacterSet#scan:  2373856.1 i/s
+         String#scan:   480000.5 i/s - 4.95x slower
 ```
 ```
 Detecting whitespace
 
-CharacterSet#used_by?: 13847689.0 i/s
-       Regexp#match?:  7533275.2 i/s - 1.84x  slower
+CharacterSet#used_by?: 11988328.7 i/s
+       Regexp#match?:  6758146.8 i/s - 1.77x slower
 ```
 ```
 Detecting emoji in a large string
 
-CharacterSet#used_by?:   246527.7 i/s
-       Regexp#match?:    92956.5 i/s - 2.65x  slower
+CharacterSet#used_by?:   288223.3 i/s
+       Regexp#match?:   102384.2 i/s - 2.82x slower
 ```
 ```
 Adding entries
 
-    CharacterSet#add:  3102081.7 i/s
-       SortedSet#add:  1897464.8 i/s - 1.63x  slower
+    CharacterSet#add:  2538251.2 i/s
+       SortedSet#add:   443925.9 i/s - 5.72x slower
 ```
 ```
 Removing entries
 
- CharacterSet#delete:  3240924.1 i/s
-    SortedSet#delete:  2887493.9 i/s - 1.12x  slower
+ CharacterSet#delete:  2487620.8 i/s
+    SortedSet#delete:   628816.1 i/s - 3.96x slower
 ```
 ```
 Merging entries
 
-  CharacterSet#merge:      536.8 i/s
-     SortedSet#merge:       12.5 i/s - 42.78x  slower
+  CharacterSet#merge:      551.6 i/s
+     SortedSet#merge:        1.4 i/s - 393.59x slower
 ```
 ```
 Getting the min and max
 
- CharacterSet#minmax:  4111960.8 i/s
-    SortedSet#minmax:      756.4 i/s - 5436.39x  slower
+ CharacterSet#minmax:   636890.7 i/s
+    SortedSet#minmax:      254.1 i/s - 2506.20x slower
 ```
