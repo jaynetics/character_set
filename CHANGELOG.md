@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.4.1] - 2020-01-10
+
+### Fixed
+- multiple fixes for Ruby 3
+  - fixed segfault for some `String` manipulation cases
+  - added `sorted_set` as dependency, so `CharacterSet::Pure` (non-C fallback) works
+- fixed error when parsing a `Regexp` with an empty intersection (e.g. `/[a&&]/`)
+
 ## [1.4.0] - 2019-06-07
 
 ### Added
