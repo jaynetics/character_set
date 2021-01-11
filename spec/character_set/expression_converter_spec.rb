@@ -13,6 +13,7 @@ describe CharacterSet::ExpressionConverter do
 
     it 'raises when passed a root containing != 1 expression' do
       expect { result(/[a][b]/, true) }.to raise_error(described_class::Error)
+      expect { result(//, true) }.to raise_error(described_class::Error)
     end
 
     it 'parses literals of length 1' do
@@ -54,8 +55,17 @@ describe CharacterSet::ExpressionConverter do
       expect(result(/[^\x00\u0004-\u{10FFFF}]/)).to eq CharacterSet[1, 2, 3]
     end
 
+    it 'supports empty sets (though invalid as Regexp literal)' do
+      expect(result('[]')).to eq CharacterSet[]
+    end
+
     it 'supports intersections' do
       expect(result(/[a-f&&c-z]/)).to eq CharacterSet['c', 'd', 'e', 'f']
+      # Intersections can lack one or both sides. In these cases they
+      # match nothing, e.g. `/[a&&]/` matches neither `a` nor `&`.
+      expect(result(/[a&&]/)).to eq CharacterSet[]
+      expect(result(/[&&a]/)).to eq CharacterSet[]
+      expect(result(/[&&]/)).to eq CharacterSet[]
     end
 
     it 'supports properties' do
@@ -72,7 +82,7 @@ describe CharacterSet::ExpressionConverter do
     end
 
     it 'supports capturing, passive, named, atomic and option groups' do
-      expect(result(/((?:(?<foo>(?>(?m:[a-c])))))/)).to eq CharacterSet['a', 'b', 'c']
+      expect(result(/(?:(?:(?<foo>(?>(?m:[a-c])))))/)).to eq CharacterSet['a', 'b', 'c']
     end
 
     it 'supports empty groups' do

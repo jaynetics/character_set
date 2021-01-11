@@ -16,13 +16,14 @@ class CharacterSet
 
       when Regexp::Expression::CharacterSet
         content = expression.map { |subexp| convert(subexp) }.reduce(:+)
+        content ||= CharacterSet[]
         expression.negative? ? content.inversion : content
 
       when Regexp::Expression::CharacterSet::Intersection
         expression.map { |subexp| convert(subexp) }.reduce(:&)
 
       when Regexp::Expression::CharacterSet::IntersectedSequence
-        expression.map { |subexp| convert(subexp) }.reduce(:+)
+        expression.map { |subexp| convert(subexp) }.reduce(:+) || CharacterSet[]
 
       when Regexp::Expression::CharacterSet::Range
         start, finish = expression.map { |subexp| convert(subexp) }
