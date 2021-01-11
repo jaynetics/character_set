@@ -63,9 +63,9 @@ describe CharacterSet::ExpressionConverter do
       expect(result(/[a-f&&c-z]/)).to eq CharacterSet['c', 'd', 'e', 'f']
       # Intersections can lack one or both sides. In these cases they
       # match nothing, e.g. `/[a&&]/` matches neither `a` nor `&`.
-      expect(result(/[a&&]/)).to eq CharacterSet[]
-      expect(result(/[&&a]/)).to eq CharacterSet[]
-      expect(result(/[&&]/)).to eq CharacterSet[]
+      expect(result('[a&&]')).to eq CharacterSet[]
+      expect(result('[&&a]')).to eq CharacterSet[]
+      expect(result('[&&]')).to eq CharacterSet[]
     end
 
     it 'supports properties' do
