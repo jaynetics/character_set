@@ -8,4 +8,4 @@ class CharacterSet
   end
 end
 
-::Regexp.send(:include, CharacterSet::CoreExt::RegexpExt)
+::Regexp.instance_eval { include CharacterSet::CoreExt::RegexpExt }

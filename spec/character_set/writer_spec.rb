@@ -1,38 +1,38 @@
 describe CharacterSet::Writer do
-  Writer = described_class
+  let(:writer) { described_class }
 
   describe '::write' do
     it 'turns an Array of codepoint Ranges into a bracket expression String' do
-      expect(Writer.write([])).to eq ''
-      expect(Writer.write([97..97])).to eq 'a'
-      expect(Writer.write([97..99])).to eq 'a-c'
-      expect(Writer.write([97..99, 101..101])).to eq 'a-ce'
+      expect(writer.write([])).to eq ''
+      expect(writer.write([97..97])).to eq 'a'
+      expect(writer.write([97..99])).to eq 'a-c'
+      expect(writer.write([97..99, 101..101])).to eq 'a-ce'
     end
 
     it 'does not abbreviate (build ranges) iff abbreviate: is false' do
-      expect(Writer.write([97..99], abbreviate: false)).to eq 'abc'
+      expect(writer.write([97..99], abbreviate: false)).to eq 'abc'
     end
 
     it 'adds surrounding brackets iff in_brackets: is true' do
-      expect(Writer.write([97..99], in_brackets: true)).to eq '[a-c]'
+      expect(writer.write([97..99], in_brackets: true)).to eq '[a-c]'
     end
 
     it 'passes escape_all: to Character#escape' do
-      expect(Writer.write([97..97], escape_all: true)).to eq '\x61'
+      expect(writer.write([97..97], escape_all: true)).to eq '\x61'
     end
 
     it 'passes format: to Character#escape' do
-      expect(Writer.write([0x1F60B..0x1F60B], format: 'u+')).to eq 'U+1F60B'
+      expect(writer.write([0x1F60B..0x1F60B], format: 'u+')).to eq 'U+1F60B'
     end
 
     it 'passes a given block to Character#escape' do
-      expect(Writer.write([250..255], &:hex)).to eq 'FA-FF'
+      expect(writer.write([250..255], &:hex)).to eq 'FA-FF'
     end
   end
 
   describe '::write_surrogate_ranges' do
     def result(bmp_ranges, astral_ranges)
-      Writer.write_surrogate_ranges(bmp_ranges, astral_ranges)
+      writer.write_surrogate_ranges(bmp_ranges, astral_ranges)
     end
 
     it 'turns bmp and astral ranges into an alternation expression' do
@@ -73,7 +73,7 @@ describe CharacterSet::Writer do
 
   describe '::write_surrogate_alternation' do
     def result(bmp_ranges, astral_ranges)
-      Writer.write_surrogate_alternation(bmp_ranges, astral_ranges)
+      writer.write_surrogate_alternation(bmp_ranges, astral_ranges)
     end
 
     it 'turns bmp and astral ranges into an alternation expression' do

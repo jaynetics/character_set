@@ -29,4 +29,4 @@ class CharacterSet
   end
 end
 
-::String.send(:include, CharacterSet::CoreExt::StringExt)
+::String.instance_eval { include CharacterSet::CoreExt::StringExt }

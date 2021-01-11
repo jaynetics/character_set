@@ -29,14 +29,6 @@ shared_examples :character_set_keep_in do |variant|
     expect(variant[97, 98, 99].keep_in(' abz '.strip)).to eq 'ab'
   end
 
-  it 'works with non-terminated strings' do
-    embedded_string = "abzefg"
-    string = embedded_string.gsub("efg", "aby")
-    {}[string] = 1
-    non_terminated = "#{string}#{nil}"
-    expect(variant[97, 98, 99].keep_in(non_terminated)).to eq 'abab'
-  end
-
   TESTED_ENCODINGS.each do |enc|
     it "works with #{enc} strings, keeping the original encoding" do
       str = 'abz'.encode(enc)

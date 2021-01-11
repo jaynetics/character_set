@@ -1,0 +1,11 @@
+AllCops:
+  Exclude:
+    - '**/doc/*'
+    - '**/pkg/*'
+    - '**/spec/ruby-spec/**/*'
+    - '**/vendor/**/*' # vendored dependencies
+  NewCops: enable
+  RubyInterpreters:
+    - ruby
+    - rake
+  TargetRubyVersion: 2.4 # really 2.1, but 2.4 is lowest supported by rubocop

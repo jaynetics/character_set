@@ -68,7 +68,7 @@ class CharacterSet
           raise Error, 'Groups must contain exactly one expression, e.g. ([a-z])'
         end
 
-      when Regexp::Expression::Alternation
+      when Regexp::Expression::Alternation # rubocop:disable Lint/DuplicateBranch
         expression.map { |subexp| convert(subexp) }.reduce(:+)
 
       when Regexp::Expression::Alternative
