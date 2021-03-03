@@ -32,6 +32,10 @@ describe CharacterSet::Parser do
       set = CharacterSet[97, 98, 99]
       expect(result(set)).to eq [97, 98, 99]
     end
+
+    it 'raises for invalid contents' do
+      expect { result([Object.new]) }.to raise_error(ArgumentError)
+    end
   end
 
   describe '::codepoints_from_bracket_expression' do

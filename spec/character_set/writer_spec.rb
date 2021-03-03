@@ -45,6 +45,16 @@ describe CharacterSet::Writer do
         .to eq '(?:[a-c]|\uD83D\uDE0B)'
     end
 
+    it 'works with multiple astral ranges' do
+      expect(result([], [0x1F60B..0x1F60C, 0x1F60E..0x1F60F]))
+        .to eq '(?:\uD83D[\uDE0B\uDE0C\uDE0E\uDE0F])'
+    end
+
+    it 'works with large astral ranges (spanning multiple low surrogates)' do
+      expect(result([], [0x10000..0x10FFFF]))
+        .to eq '(?:[\uD800-\uDBFF][\uDC00-\uDFFF])'
+    end
+
     it 'does not use a bracket expression for single high surrogates' do
       expect(result([97..99], [0x1F60B..0x1F60F]))
         .to eq '(?:[a-c]|\uD83D[\uDE0B-\uDE0F])'
@@ -66,7 +76,7 @@ describe CharacterSet::Writer do
     end
 
     it 'doesnt include an empty bracket expression if there are no bmp bits' do
-      expect(result([], [0x1F60B..0x1F60c]))
+      expect(result([], [0x1F60B..0x1F60C]))
         .to eq '(?:\uD83D[\uDE0B\uDE0C])'
     end
   end
