@@ -3,10 +3,12 @@ describe CharacterSet do
     expect(CharacterSet::VERSION).not_to be nil
   end
 
-  it 'uses the RubyFallback in non-C rubies' do
-    if RUBY_PLATFORM[/java/i]
+  if RUBY_PLATFORM[/java/i]
+    it 'uses the RubyFallback in non-C rubies' do
       expect(CharacterSet.ancestors).to include(CharacterSet::RubyFallback)
-    else
+    end
+  else
+    it 'does not use the RubyFallback in C rubies' do
       expect(CharacterSet.ancestors).not_to include(CharacterSet::RubyFallback)
     end
   end
