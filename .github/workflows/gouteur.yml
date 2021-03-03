@@ -13,6 +13,8 @@ jobs:
         with:
           ruby-version: 2.7
       - name: Prepare
-        run: bundle install --jobs 4
+        run: |
+          bundle install --jobs 4
+          bundle exec rake compile
       - name: Test
         run: bundle exec gouteur

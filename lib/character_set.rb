@@ -10,7 +10,7 @@ require 'character_set/writer'
 class CharacterSet
   begin
     require 'character_set/character_set'
-  # rescue LoadError
+  rescue LoadError
     require 'character_set/ruby_fallback'
     prepend RubyFallback
   end
