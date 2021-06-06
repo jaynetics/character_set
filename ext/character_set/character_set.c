@@ -705,7 +705,8 @@ cs_method_ranges(VALUE self)
 
       if (!previous_cp_num) {
         current_start = cp_num;
-      } else if (previous_cp_num + 2 != cp_num) {
+      } else if (previous_cp_num + 2 != cp_num)
+      {
         // gap found, finalize previous range
         rb_ary_push(ranges, rb_range_new(current_start, current_end, 0));
         current_start = cp_num;
@@ -1046,13 +1047,17 @@ raise_arg_err_unless_string(VALUE val)
 }
 
 static VALUE
-cs_class_method_of(VALUE self, VALUE str)
+cs_class_method_of(int argc, VALUE *argv, VALUE self)
 {
   VALUE new_cs;
   struct cs_data *new_data;
+  int i;
   new_cs = cs_alloc(self, &new_data);
-  raise_arg_err_unless_string(str);
-  each_cp(str, add_str_cp_to_arr, 0, 0, new_data, 0);
+  for (i = 0; i < argc; i++)
+  {
+    raise_arg_err_unless_string(argv[i]);
+    each_cp(argv[i], add_str_cp_to_arr, 0, 0, new_data, 0);
+  }
   return new_cs;
 }
 
@@ -1338,7 +1343,7 @@ void Init_character_set()
   // `CharacterSet`-specific methods
 
   rb_define_singleton_method(cs, "from_ranges", cs_class_method_from_ranges, -2);
-  rb_define_singleton_method(cs, "of", cs_class_method_of, 1);
+  rb_define_singleton_method(cs, "of", cs_class_method_of, -1);
 
   rb_define_method(cs, "ranges", cs_method_ranges, 0);
   rb_define_method(cs, "sample", cs_method_sample, -1);
