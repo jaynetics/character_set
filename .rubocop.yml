@@ -8,4 +8,4 @@ AllCops:
   RubyInterpreters:
     - ruby
     - rake
-  TargetRubyVersion: 2.4 # really 2.1, but 2.4 is lowest supported by rubocop
+  TargetRubyVersion: 2.5 # really 2.1, but 2.5 is lowest supported by rubocop
