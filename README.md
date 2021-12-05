@@ -182,7 +182,18 @@ set.to_s_with_surrogate_alternation
 # => '(?:[ab]|\uD83E\uDD29|\uD83E\uDD2A|\uD83E\uDD2B)'
 ```
 
-### Unicode plane methods
+### Other features
+
+#### Secure tokens
+
+Generate secure random strings of characters from a set:
+
+```ruby
+CharacterSet.new('a'..'z').secure_token(8) # => "ugwpujmt"
+CharacterSet.crypt.secure_token # => "8.1w7aBT737/pMfcMoO4y2y8/=0xtmo:"
+```
+
+#### Unicode planes
 
 There are some methods to check for planes and to handle ASCII, [BMP](https://en.wikipedia.org/wiki/Plane_%28Unicode%29#Basic_Multilingual_Plane) and astral parts:
 ```Ruby

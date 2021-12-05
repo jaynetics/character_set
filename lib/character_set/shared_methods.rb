@@ -90,6 +90,14 @@ class CharacterSet
           Writer.write_surrogate_alternation(bmp_part.ranges, astral_part.ranges)
         end
 
+        def secure_token(length = 32)
+          CharacterSet.require_optional_dependency('securerandom', __method__)
+          cps = to_a
+          len = cps.count
+          1.upto(length).map { cps[SecureRandom.random_number(len)] }.pack('U*')
+        end
+        alias random_token secure_token
+
         def inspect
           len = length
           "#<#{klass.name}: {\#{first(5) * ', '}\#{'...' if len > 5}} (size: \#{len})>"

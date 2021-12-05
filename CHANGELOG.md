@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 
+- new instance method `#secure_token` (see README)
 - class method `::of` now accepts more than one `String`
 
 ## [1.4.1] - 2020-01-10
