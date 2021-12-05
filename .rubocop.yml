@@ -9,3 +9,9 @@ AllCops:
     - ruby
     - rake
   TargetRubyVersion: 2.5 # really 2.1, but 2.5 is lowest supported by rubocop
+
+Lint/AmbiguousOperatorPrecedence:
+  Enabled: false
+
+Lint/AmbiguousRegexpLiteral:
+  Enabled: false
