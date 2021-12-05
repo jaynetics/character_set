@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 
+- new codepoints for `::assigned` and `::emoji` predefined sets, as in Ruby 3.1.0
 - latest unicode case-folding data (for `#case_insensitive`)
 - support for passing any Enumerable to `#disjoint?`, `#intersect?`
   - this matches recent broadening of these methods in `ruby/set`
