@@ -12,6 +12,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   - this matches recent broadening of these methods in `ruby/set`
 - new instance method `#secure_token` (see README)
 - class method `::of` now accepts more than one `String`
+- `CharacterSet::ExpressionConverter` can now build output of any Set-like class
+
+### Fixed
+
+- `CharacterSet::Pure::of_expression` now returns a `CharacterSet::Pure`
+  - it used to return a regular `CharacterSet`
 
 ## [1.4.1] - 2020-01-10
 

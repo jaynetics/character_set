@@ -2,9 +2,16 @@ require 'regexp_parser'
 
 describe CharacterSet::ExpressionConverter do
   describe '::convert' do
-    def result(arg, test_root = false)
+    def result(arg, test_root = false, to: CharacterSet)
       exp = Regexp::Parser.parse(arg)
-      CharacterSet::ExpressionConverter.convert(test_root ? exp : exp[0])
+      CharacterSet::ExpressionConverter.convert(test_root ? exp : exp[0], to)
+    end
+
+    it 'converts into the given Set class' do
+      expect(result(/a/, to: CharacterSet)).to       eq CharacterSet[97]
+      expect(result(/a/, to: CharacterSet::Pure)).to eq CharacterSet::Pure[97]
+      expect(result(/a/, to: Set)).to                eq Set[97]
+      expect(result(/a/, to: SortedSet)).to          eq SortedSet[97]
     end
 
     it 'parses root expressions recursively' do

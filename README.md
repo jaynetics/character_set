@@ -11,6 +11,7 @@ It also offers an alternate paradigm of `String` processing which grants much be
 
 Many parts can be used independently, e.g.:
 - `CharacterSet::Character`
+- `CharacterSet::ExpressionConverter`
 - `CharacterSet::Parser`
 - `CharacterSet::Writer`
 - [`RangeCompressor`](https://github.com/jaynetics/range_compressor)

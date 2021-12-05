@@ -36,7 +36,7 @@ class CharacterSet
           end
 
           def of_expression(expression)
-            ExpressionConverter.convert(expression)
+            ExpressionConverter.convert(expression, self)
           end
 
           def require_optional_dependency(name, method)
