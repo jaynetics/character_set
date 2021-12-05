@@ -22,13 +22,14 @@ class CharacterSet
 
     # Allow some methods to take an Enum just as well as another CharacterSet.
     # Tested by ruby-spec.
-    %w[& + - ^ | difference intersection subtract union].each do |method|
+    %w[& + - ^ | difference disjoint? intersect? intersection
+       subtract union].each do |method|
       class_eval <<-RUBY, __FILE__, __LINE__ + 1
         def #{method}(arg)
           if arg.is_a?(CharacterSet)
-            super
+            super(arg)
           elsif arg.respond_to?(:each)
-            super(CharacterSet.new(arg.to_a))
+            super(self.class.new(arg.to_a))
           else
             raise ArgumentError, 'pass an enumerable'
           end
