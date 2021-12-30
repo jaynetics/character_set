@@ -28,18 +28,4 @@ Gem::Specification.new do |s|
   if RUBY_VERSION.to_f >= 3.0 && !RUBY_PLATFORM[/java/i]
     s.add_dependency 'sorted_set', '~> 1.0'
   end
-
-  s.add_development_dependency 'benchmark-ips', '~> 2.7'
-  s.add_development_dependency 'get_process_mem', '~> 0.2.3'
-  s.add_development_dependency 'rake', '~> 13.0'
-  s.add_development_dependency 'rake-compiler', '~> 1.1'
-  s.add_development_dependency 'range_compressor', '~> 1.0'
-  s.add_development_dependency 'regexp_parser', '~> 2.1'
-  s.add_development_dependency 'regexp_property_values', '~> 1.0'
-  s.add_development_dependency 'rspec', '~> 3.8'
-  if RUBY_VERSION.to_f >= 2.7
-    s.add_development_dependency 'codecov', '~> 0.2.12'
-    s.add_development_dependency 'gouteur', '~> 1.0.0'
-    s.add_development_dependency 'rubocop', '~> 1.8'
-  end
 end
