@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Fixed
+
+- allow usage in Ractors
+  - predefined sets must be pre-initialized for this, though
+  - e.g. `CharacterSet.ascii`, `keep_character_set(:ascii)` etc.
+  - call them once in the main Ractor to trigger initialization
+
 ## [1.5.0] - 2021-12-05
 
 ### Added

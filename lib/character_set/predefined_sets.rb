@@ -22,6 +22,17 @@ class CharacterSet
     alias valid                    unicode
 
     def build_from_cps_file(path)
+      if defined?(Ractor) && Ractor.current != Ractor.main
+        raise <<-EOS.gsub(/^ */, '')
+          CharacterSet's predefined sets are lazy-loaded.
+          Pre-load them to use them in Ractors. E.g.:
+
+          CharacterSet.ascii # pre-load
+          Ractor.new { CharacterSet.ascii.size }.take # => 128
+          Ractor.new { 'abc'.keep_character_set(:ascii) }.take # => 'abc'
+        EOS
+      end
+
       File.readlines(path).inject(new) do |set, line|
         range_start, range_end = line.split(',')
         set.merge((range_start.to_i(16))..(range_end.to_i(16)))

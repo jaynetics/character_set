@@ -82,7 +82,11 @@ static const rb_data_type_t cs_type = {
         .dsize = cs_memsize,
     },
     .data = NULL,
+#ifdef RUBY_TYPED_FROZEN_SHAREABLE
+    .flags = RUBY_TYPED_FREE_IMMEDIATELY | RUBY_TYPED_FROZEN_SHAREABLE,
+#else
     .flags = RUBY_TYPED_FREE_IMMEDIATELY,
+#endif
 };
 
 static inline VALUE
@@ -1289,6 +1293,10 @@ cs_method_allocated_length(VALUE self)
 
 void Init_character_set()
 {
+#ifdef HAVE_RB_EXT_RACTOR_SAFE
+  rb_ext_ractor_safe(true);
+#endif
+
   VALUE cs = rb_define_class("CharacterSet", rb_cObject);
 
   rb_define_alloc_func(cs, cs_method_allocate);
