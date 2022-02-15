@@ -1144,20 +1144,6 @@ cs_method_used_by_p(VALUE self, VALUE str)
   return only_uses_other_cps == Qfalse ? Qtrue : Qfalse;
 }
 
-static void
-cs_str_buf_cat(VALUE str, const char *ptr, long len)
-{
-  long total, olen;
-  char *sptr;
-
-  RSTRING_GETMEM(str, sptr, olen);
-  sptr = RSTRING(str)->as.heap.ptr;
-  olen = RSTRING(str)->as.heap.len;
-  total = olen + len;
-  memcpy(sptr + olen, ptr, len);
-  RSTRING(str)->as.heap.len = total;
-}
-
 #ifndef TERM_FILL
 #define TERM_FILL(ptr, termlen)                     \
   do                                                \
@@ -1170,90 +1156,81 @@ cs_str_buf_cat(VALUE str, const char *ptr, long len)
   } while (0)
 #endif
 
-static void
-cs_str_buf_terminate(VALUE str, rb_encoding *enc)
-{
-  char *ptr;
-  long len;
+#ifndef TERM_LEN
+#define TERM_LEN(str) rb_enc_mbminlen(rb_enc_get(str))
+#endif
 
-  ptr = RSTRING(str)->as.heap.ptr;
-  len = RSTRING(str)->as.heap.len;
-  TERM_FILL(ptr + len, rb_enc_mbminlen(enc));
-}
-
+// partially based on rb_str_delete_bang
 static inline VALUE
 cs_apply_to_str(VALUE set, VALUE str, int delete, int bang)
 {
   cs_ar *cps;
-  cs_cp len;
-  rb_encoding *str_enc;
-  VALUE orig_len, new_str_buf;
-  int cp_len;
-  unsigned int str_cp;
-  const char *ptr, *end;
+  cs_cp cs_len;
+  VALUE orig_str_len;
+
+  rb_encoding *enc;
+  char *s, *send, *t;
+  int ascompat, cr;
 
   raise_arg_err_unless_string(str);
 
-  cps = cs_fetch_cps(set, &len);
+  orig_str_len = RSTRING_LEN(str);
 
-  orig_len = RSTRING_LEN(str);
-  if (orig_len < 1) // empty string, will never change
+  if (orig_str_len == 0)
   {
-    if (bang)
-    {
-      return Qnil;
-    }
-    return rb_str_dup(str);
+    return bang ? Qnil : str;
   }
 
-  new_str_buf = rb_str_buf_new(orig_len + 30); // len + margin
-  str_enc = rb_enc_get(str);
-  rb_enc_associate(new_str_buf, str_enc);
-  rb_str_modify(new_str_buf);
-  ENC_CODERANGE_SET(new_str_buf, rb_enc_asciicompat(str_enc) ? ENC_CODERANGE_7BIT : ENC_CODERANGE_VALID);
-
-  ptr = RSTRING_PTR(str);
-  end = RSTRING_END(str);
-
-  if (single_byte_optimizable(str))
+  if (!bang)
   {
-    while (ptr < end)
+    str = rb_str_dup(str);
+  }
+
+  cps = cs_fetch_cps(set, &cs_len);
+  rb_str_modify(str);
+  enc = rb_enc_get(str);
+  ascompat = rb_enc_asciicompat(enc);
+  s = t = RSTRING_PTR(str);
+  send = RSTRING_END(str);
+  cr = ascompat ? ENC_CODERANGE_7BIT : ENC_CODERANGE_VALID;
+  while (s < send)
+  {
+    unsigned int c;
+    int clen;
+
+    if (ascompat && (c = *(unsigned char *)s) < 0x80)
     {
-      str_cp = *ptr & 0xff;
-      if ((!tst_cp(cps, len, str_cp)) == delete)
+      if (tst_cp(cps, cs_len, c) != delete)
       {
-        cs_str_buf_cat(new_str_buf, ptr, 1);
+        if (t != s)
+          *t = c;
+        t++;
       }
-      ptr++;
+      s++;
     }
-  }
-  else // likely to be multibyte string
-  {
-    while (ptr < end)
+    else
     {
-      str_cp = rb_enc_codepoint_len(ptr, end, &cp_len, str_enc);
-      if ((!tst_cp(cps, len, str_cp)) == delete)
+      c = rb_enc_codepoint_len(s, send, &clen, enc);
+
+      if (tst_cp(cps, cs_len, c) != delete)
       {
-        cs_str_buf_cat(new_str_buf, ptr, cp_len);
+        if (t != s)
+          rb_enc_mbcput(c, t, enc);
+        t += clen;
+        if (cr == ENC_CODERANGE_7BIT)
+          cr = ENC_CODERANGE_VALID;
       }
-      ptr += cp_len;
+      s += clen;
     }
   }
 
-  cs_str_buf_terminate(new_str_buf, str_enc);
+  TERM_FILL(t, TERM_LEN(str));
+  RSTRING(str)->as.heap.len = t - RSTRING_PTR(str);
+  ENC_CODERANGE_SET(str, cr);
 
-  if (bang)
+  if (bang && (RSTRING_LEN(str) == (long)orig_str_len)) // string unchanged
   {
-    if (RSTRING_LEN(new_str_buf) == (long)orig_len) // string unchanged
-    {
-      return Qnil;
-    }
-    rb_str_shared_replace(str, new_str_buf);
-  }
-  else
-  {
-    RB_OBJ_WRITE(new_str_buf, &(RBASIC(new_str_buf))->klass, rb_obj_class(str));
-    str = new_str_buf;
+    return Qnil;
   }
 
   return str;
