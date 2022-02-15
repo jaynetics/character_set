@@ -16,6 +16,7 @@ shared_examples :character_set_delete_in do |variant|
 
   it 'works with multibyte characters' do
     expect(variant[0x1F60B].delete_in("a\u{1F60B}c")).to eq "ac"
+    expect(variant[97, 98, 99].delete_in("a\u{1F60B}c")).to eq "\u{1F60B}"
   end
 
   it 'works with long strings' do
