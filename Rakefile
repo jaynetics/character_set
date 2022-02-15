@@ -147,8 +147,11 @@ namespace :benchmark do
       f.puts "Results of `rake:benchmark` on #{RUBY_DESCRIPTION}", ''
 
       $store_comparison_results.each do |caption, result|
-        f.puts '```', caption, '',
-               result.strip.gsub(/(same-ish).*$/, '\1').lines[1..-1], '```'
+        f.puts '```',
+               caption,
+               '',
+               result.strip.gsub(/ \(±[^)]+\) /, '').gsub(/(same-ish).*$/, '\1').lines[1..-1],
+               '```'
       end
     end
   end
