@@ -19,28 +19,32 @@ Detecting non-letters
        Regexp#match?:  7951108.0 i/s - 2.21x slower
 ```
 ```
-Removing whitespace
+Removing ASCII whitespace
 
-CharacterSet#delete_in:  6346527.5 i/s
-         String#gsub:   213181.0 i/s - 29.77x slower
+CharacterSet#delete_in:  6306078.2 i/s
+           String#tr:  4734401.0 i/s - 1.33x slower
+         String#gsub:   211631.8 i/s - 29.80x slower
 ```
 ```
 Removing whitespace, emoji and umlauts
 
-CharacterSet#delete_in:  6019275.2 i/s
-         String#gsub:   318986.4 i/s - 18.87x slower
+CharacterSet#delete_in:  5984149.6 i/s
+           String#tr:   363643.1 i/s - 16.46x slower
+         String#gsub:   317201.7 i/s - 18.87x slower
 ```
 ```
 Removing non-whitespace
 
-CharacterSet#keep_in:  7651109.7 i/s
-         String#gsub:   208996.1 i/s - 36.61x slower
+CharacterSet#keep_in:  7650925.6 i/s
+         String#gsub:   207374.6 i/s - 36.89x slower
+           String#tr:       12.3 i/s - 619745.60x slower
 ```
 ```
-Extracting emoji
+Keeping only emoji
 
-CharacterSet#keep_in:  7272115.3 i/s
-         String#gsub:   179505.1 i/s - 40.51x slower
+CharacterSet#keep_in:  7272940.1 i/s
+         String#gsub:   177993.8 i/s - 40.86x slower
+           String#tr:       12.3 i/s - 590222.71x slower
 ```
 ```
 Extracting emoji to an Array
