@@ -319,9 +319,9 @@ cs_method_minmax(VALUE self)
     cs_cp cp, alen, blen;                                        \
     cs_ar *acps, *bcps;                                          \
     struct cs_data *new_data;                                    \
-    new_cs = cs_alloc(RBASIC(self)->klass, &new_data);           \
     acps = cs_fetch_cps(cs_a, &alen);                            \
     bcps = cs_fetch_cps(cs_b, &blen);                            \
+    new_cs = cs_alloc(RBASIC(self)->klass, &new_data);           \
     for (cp = 0; cp < UNICODE_CP_COUNT; cp++)                    \
     {                                                            \
       if (tst_cp(acps, alen, cp) comp_op tst_cp(bcps, blen, cp)) \
@@ -709,8 +709,7 @@ cs_method_ranges(VALUE self)
 
       if (!previous_cp_num) {
         current_start = cp_num;
-      } else if (previous_cp_num + 2 != cp_num)
-      {
+      } else if (previous_cp_num + 2 != cp_num) {
         // gap found, finalize previous range
         rb_ary_push(ranges, rb_range_new(current_start, current_end, 0));
         current_start = cp_num;
@@ -1056,10 +1055,13 @@ cs_class_method_of(int argc, VALUE *argv, VALUE self)
   VALUE new_cs;
   struct cs_data *new_data;
   int i;
-  new_cs = cs_alloc(self, &new_data);
   for (i = 0; i < argc; i++)
   {
     raise_arg_err_unless_string(argv[i]);
+  }
+  new_cs = cs_alloc(self, &new_data);
+  for (i = 0; i < argc; i++)
+  {
     each_cp(argv[i], add_str_cp_to_arr, 0, 0, new_data, 0);
   }
   return new_cs;
