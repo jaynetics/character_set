@@ -15,6 +15,12 @@ class CharacterSet
             new(Array(args))
           end
 
+          def of(*args)
+            args.map do |arg|
+              arg.is_a?(Regexp) ? of_regexp(arg) : of_string(arg)
+            end.reduce(:merge) || new
+          end
+
           def parse(string)
             codepoints = Parser.codepoints_from_bracket_expression(string)
             result = new(codepoints)

@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Added
+
+- `::of` now supports both `String` and `Regexp` arguments
+
 ### Fixed
 
 - allow usage in Ractors

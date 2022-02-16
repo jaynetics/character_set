@@ -1050,20 +1050,14 @@ raise_arg_err_unless_string(VALUE val)
 }
 
 static VALUE
-cs_class_method_of(int argc, VALUE *argv, VALUE self)
+cs_class_method_of_string(VALUE self, VALUE string)
 {
   VALUE new_cs;
   struct cs_data *new_data;
-  int i;
-  for (i = 0; i < argc; i++)
-  {
-    raise_arg_err_unless_string(argv[i]);
-  }
+
+  raise_arg_err_unless_string(string);
   new_cs = cs_alloc(self, &new_data);
-  for (i = 0; i < argc; i++)
-  {
-    each_cp(argv[i], add_str_cp_to_arr, 0, 0, new_data, 0);
-  }
+  each_cp(string, add_str_cp_to_arr, 0, 0, new_data, 0);
   return new_cs;
 }
 
@@ -1313,7 +1307,7 @@ void Init_character_set()
   // `CharacterSet`-specific methods
 
   rb_define_singleton_method(cs, "from_ranges", cs_class_method_from_ranges, -2);
-  rb_define_singleton_method(cs, "of", cs_class_method_of, -1);
+  rb_define_singleton_method(cs, "of_string", cs_class_method_of_string, 1);
 
   rb_define_method(cs, "ranges", cs_method_ranges, 0);
   rb_define_method(cs, "sample", cs_method_sample, -1);

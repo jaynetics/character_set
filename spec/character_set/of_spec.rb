@@ -1,17 +1,28 @@
 shared_examples :character_set_of do |variant|
-  it 'returns the CharacterSet used by the given String' do
-    expect(variant.of('cccaaabbb')).to eq variant[97, 98, 99]
+  it 'calls ::of_string if given a String' do
+    expect(variant).to receive(:of_string).and_return(variant[97])
+    expect(variant.of('foo')).to eq variant[97]
   end
 
-  it 'returns the CharacterSet used by multiple given Strings' do
-    expect(variant.of('cc', 'aa', 'bb')).to eq variant[97, 98, 99]
+  it 'calls ::of_regexp if given a Regexp' do
+    expect(variant).to receive(:of_regexp).and_return(variant[98])
+    expect(variant.of(/bar/)).to eq variant[98]
+  end
+
+  it 'works with multiple and mixed arguments' do
+    expect(variant).to receive(:of_string).with('foo').and_return(variant[97])
+    expect(variant).to receive(:of_string).with('baz').and_return(variant[98])
+    expect(variant).to receive(:of_regexp).with(/bar/).and_return(variant[98])
+    expect(variant).to receive(:of_regexp).with(/qux/).and_return(variant[99])
+
+    expect(variant.of('foo', /bar/, 'baz', /qux/)).to eq variant[97, 98, 99]
   end
 
   it 'returns an empty CharacterSet if called without arguments' do
     expect(variant.of).to eq variant[]
   end
 
-  it 'raises an ArgumentError if passed a non-String' do
+  it 'raises an ArgumentError if passed a non-String/Regexp' do
     expect { variant.of(false) }.to raise_error(ArgumentError)
     expect { variant.of(nil) }.to raise_error(ArgumentError)
     expect { variant.of(1) }.to raise_error(ArgumentError)

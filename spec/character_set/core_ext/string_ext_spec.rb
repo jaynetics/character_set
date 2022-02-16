@@ -2,8 +2,8 @@ require 'character_set/core_ext/string_ext'
 
 describe 'CharacterSet String core extension' do
   describe 'String#character_set' do
-    it 'calls CharacterSet::of, passing self' do
-      expect(CharacterSet).to receive(:of).with('foo')
+    it 'calls CharacterSet::of_string, passing self' do
+      expect(CharacterSet).to receive(:of_string).with('foo')
       'foo'.character_set
     end
   end

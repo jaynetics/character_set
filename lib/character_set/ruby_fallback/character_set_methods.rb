@@ -6,13 +6,9 @@ class CharacterSet
           new(Array(ranges).flat_map(&:to_a))
         end
 
-        def of(*strings)
-          new_set = new
-          strings.each do |str|
-            raise ArgumentError, 'pass a String' unless str.respond_to?(:codepoints)
-            str.codepoints.each { |cp| new_set << cp }
-          end
-          new_set
+        def of_string(str)
+          raise ArgumentError, 'pass a String' unless str.respond_to?(:codepoints)
+          str.codepoints.each_with_object(new) { |cp, set| set << cp }
         end
       end
 

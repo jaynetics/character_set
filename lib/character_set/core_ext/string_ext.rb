@@ -2,7 +2,7 @@ class CharacterSet
   module CoreExt
     module StringExt
       def character_set
-        CharacterSet.of(self)
+        CharacterSet.of_string(self)
       end
 
       {
