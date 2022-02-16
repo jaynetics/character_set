@@ -5,16 +5,17 @@
 [![Build Status](https://github.com/jaynetics/character_set/workflows/gouteur/badge.svg)](https://github.com/jaynetics/character_set/actions)
 [![codecov](https://codecov.io/gh/jaynetics/character_set/branch/master/graph/badge.svg)](https://codecov.io/gh/jaynetics/character_set)
 
-This is a C-extended Ruby gem to work with sets of Unicode codepoints. It can read and write these sets in various formats and implements the stdlib `Set` interface for them.
+This is a C-extended Ruby gem to work with sets of Unicode codepoints.
 
-It also offers an alternate paradigm of `String` processing which grants much better performance than `Regexp` and `String` methods from the stdlib where applicable (see [benchmarks](./BENCHMARK.md)).
+It can [read](#parseinitialize) and [write](#write) sets of codepoints in various formats and it implements the stdlib `Set` interface for them.
+
+It also offers a [way of scrubbing and scanning characters in Strings](#interact-with-strings) that is more semantic and consistently offers better performance than `Regexp` and `String` methods from the stdlib for this (see [benchmarks](./BENCHMARK.md)).
 
 Many parts can be used independently, e.g.:
 - `CharacterSet::Character`
 - `CharacterSet::ExpressionConverter`
 - `CharacterSet::Parser`
 - `CharacterSet::Writer`
-- [`RangeCompressor`](https://github.com/jaynetics/range_compressor)
 
 ## Usage
 
@@ -146,6 +147,7 @@ CharacterSet['1', 'A'].case_insensitive # => CharacterSet['1', 'A', 'a']
 ```
 
 ### Write
+
 ```ruby
 set = CharacterSet['a', 'b', 'c', 'j', '-']
 
@@ -212,6 +214,6 @@ CharacterSet['a', 'ü', '🤩'].member_in_plane?(7) # => false
 CharacterSet::Character.new('a').plane # => 0
 ```
 
-### Contributions
+## Contributions
 
 Feel free to send suggestions, point out issues, or submit pull requests.
