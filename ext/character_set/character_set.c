@@ -1144,22 +1144,6 @@ cs_method_used_by_p(VALUE self, VALUE str)
   return only_uses_other_cps == Qfalse ? Qtrue : Qfalse;
 }
 
-#ifndef TERM_FILL
-#define TERM_FILL(ptr, termlen)                     \
-  do                                                \
-  {                                                 \
-    char *const term_fill_ptr = (ptr);              \
-    const int term_fill_len = (termlen);            \
-    *term_fill_ptr = '\0';                          \
-    if (__builtin_expect(!!(term_fill_len > 1), 0)) \
-      memset(term_fill_ptr, 0, term_fill_len);      \
-  } while (0)
-#endif
-
-#ifndef TERM_LEN
-#define TERM_LEN(str) rb_enc_mbminlen(rb_enc_get(str))
-#endif
-
 // partially based on rb_str_delete_bang
 static inline VALUE
 cs_apply_to_str(VALUE set, VALUE str, int delete, int bang)
@@ -1224,8 +1208,7 @@ cs_apply_to_str(VALUE set, VALUE str, int delete, int bang)
     }
   }
 
-  TERM_FILL(t, TERM_LEN(str));
-  RSTRING(str)->as.heap.len = t - RSTRING_PTR(str);
+  rb_str_set_len(str, t - RSTRING_PTR(str));
   ENC_CODERANGE_SET(str, cr);
 
   if (bang && (RSTRING_LEN(str) == (long)orig_str_len)) // string unchanged
