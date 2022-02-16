@@ -20,6 +20,7 @@ shared_examples :character_set_require_optional_dependency do |variant|
     end
     foo = ->{ variant[] }
 
+    skip 'matcher is currently broken on jruby-head' if RUBY_PLATFORM[/java/i]
     expect { foo.call }.to raise_error(/inexistent_gem.*`foo'/)
   end
 end
