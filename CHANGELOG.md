@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## [1.6.0] - 2022-02-16
 
 ### Added
 
@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Fixed
 
+- fixed segfault during `String` manipulation on Ruby 3.2.0-dev
+- improved performance for `String` manipulation
 - allow usage in Ractors
   - predefined sets must be pre-initialized for this, though
   - e.g. `CharacterSet.ascii`, `keep_character_set(:ascii)` etc.
