@@ -69,7 +69,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - reduced memory consumption by > 90% for most use cases via dynamic resizing
   - before, every set instance required 136 KB for codepoints
   - now, 16 bytes for a CharacterSet in ASCII space, 8 KB for one in BMP space etc.
-- `#count_in` and `#scan_in` methods for `String` interaction
+- `#count_in` and `#scan` methods for `String` interaction
 - new predefined sets `::any`/`::all`, `::assigned`, `::surrogate`
 - conversion methods `#assigned_part`, `#valid_part`
 - sectioning methods `#ascii_part`, `#plane(n)`

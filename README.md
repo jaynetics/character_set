@@ -96,7 +96,7 @@ string # => ''
 
 ```ruby
 CharacterSet.non_ascii.count_in('Tüür') # => 2
-CharacterSet.non_ascii.scan_in('Tüür') # => ['ü', 'ü']
+CharacterSet.non_ascii.scan('Tüür') # => ['ü', 'ü']
 ```
 
 There is also a core extension for String interaction.
