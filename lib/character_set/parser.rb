@@ -4,11 +4,15 @@ class CharacterSet
 
     def codepoints_from_enumerable(object)
       raise ArgumentError, 'pass an Enumerable' unless object.respond_to?(:each)
+
       # Use #each to check first element (only this works for all Enumerables)
-      object.each do |e| # rubocop:disable Lint/UnreachableLoop
-        return object            if e.is_a?(Integer) && e >= 0 && e < 0x110000
-        return object.map(&:ord) if e.is_a?(String)  && e.length == 1
-        raise ArgumentError, "#{e.inspect} is not valid as a codepoint"
+      el = object.each do |el| # rubocop:disable Lint/UnreachableLoop
+        if el.is_a?(Integer) && el >= 0 && el < 0x110000
+          return object
+        elsif el.is_a?(String) && el.length == 1
+          return object.to_a.join.encode('utf-8').codepoints
+        end
+        raise ArgumentError, "#{el.inspect} is not valid as a codepoint"
       end
     end
 

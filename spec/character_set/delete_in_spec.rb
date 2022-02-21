@@ -40,6 +40,13 @@ shared_examples :character_set_delete_in do |variant|
     end
   end
 
+  it 'works with Strings in non-utf8-compatible encodings' do
+    str = 'äü'.encode('EUC-JP')
+    result = variant['ü'].delete_in(str)
+    expect(result.encoding).to eq Encoding.find('EUC-JP')
+    expect(result).to eq 'ä'.encode('EUC-JP')
+  end
+
   it 'raises an ArgumentError if passed a non-String' do
     expect { variant[].delete_in(false) }.to raise_error(ArgumentError)
     expect { variant[].delete_in(nil) }.to raise_error(ArgumentError)

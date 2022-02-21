@@ -33,6 +33,10 @@ describe CharacterSet::Parser do
       expect(result(set)).to eq [97, 98, 99]
     end
 
+    it 'works with Strings in non-utf8-compatible encodings' do
+      expect(result(['a', 'ü'.encode('EUC-JP')])).to eq [97, 0xFC]
+    end
+
     it 'raises for invalid contents' do
       expect { result([Object.new]) }.to raise_error(ArgumentError)
     end

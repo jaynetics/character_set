@@ -376,22 +376,20 @@ cs_toggle_codepoint(VALUE cs, VALUE cp_num, int on, int return_nil_if_noop)
   cps = data->cps;
   len = data->len;
   cp = FIX2ULONG(cp_num);
-  if (return_nil_if_noop && (!tst_cp(cps, len, cp) == !on))
+  if (return_nil_if_noop && tst_cp(cps, len, cp) == on)
   {
     return Qnil;
   }
+
+  if (on)
+  {
+    set_cp(data, cp);
+  }
   else
   {
-    if (on)
-    {
-      set_cp(data, cp);
-    }
-    else
-    {
-      clr_cp(cps, len, cp);
-    }
-    return cs;
+    clr_cp(cps, len, cp);
   }
+  return cs;
 }
 
 static VALUE
@@ -575,7 +573,7 @@ cs_method_merge(VALUE self, VALUE other)
   {
     return cs_merge_cs(self, other);
   }
-  else if (TYPE(other) == T_ARRAY)
+  if (TYPE(other) == T_ARRAY)
   {
     return cs_merge_rb_array(self, other);
   }
@@ -917,10 +915,10 @@ cs_method_ext_inversion(int argc, VALUE *argv, VALUE self)
   return new_cs;
 }
 
-typedef int (*str_cp_handler)(unsigned int, cs_ar *, cs_cp len, struct cs_data *data, VALUE *memo);
+typedef int (*str_cp_handler)(unsigned int, cs_ar *, cs_cp len, struct cs_data *data, VALUE memo);
 
 static inline int
-add_str_cp_to_arr(unsigned int str_cp, cs_ar *cp_arr, cs_cp len, struct cs_data *data, VALUE *memo)
+add_str_cp_to_arr(unsigned int str_cp, cs_ar *cp_arr, cs_cp len, struct cs_data *data, VALUE memo)
 {
   set_cp(data, str_cp);
   return 1;
@@ -967,7 +965,7 @@ cs_method_case_insensitive(VALUE self)
 }
 
 static inline VALUE
-each_sb_cp(VALUE str, str_cp_handler func, cs_ar *cp_arr, cs_cp len, struct cs_data *data, VALUE *memo)
+each_sb_cp(VALUE str, str_cp_handler func, cs_ar *cp_arr, cs_cp len, struct cs_data *data, VALUE memo)
 {
   long i, str_len;
   unsigned int str_cp;
@@ -986,21 +984,29 @@ each_sb_cp(VALUE str, str_cp_handler func, cs_ar *cp_arr, cs_cp len, struct cs_d
 }
 
 static inline VALUE
-each_mb_cp(VALUE str, str_cp_handler func, cs_ar *cp_arr, cs_cp len, struct cs_data *data, VALUE *memo)
+each_mb_cp(VALUE str, str_cp_handler func, cs_ar *cp_arr, cs_cp len, struct cs_data *data, VALUE memo)
 {
   int n;
   unsigned int str_cp;
   const char *ptr, *end;
-  rb_encoding *enc;
+  rb_encoding *utf8;
 
-  str = rb_str_new_frozen(str);
+  utf8 = rb_utf8_encoding();
+  if (rb_enc_get(str) == utf8)
+  {
+    str = rb_str_new_frozen(str);
+  }
+  else
+  {
+    str = rb_str_encode(str, rb_enc_from_encoding(utf8), 0, Qnil);
+  }
+
   ptr = RSTRING_PTR(str);
   end = RSTRING_END(str);
-  enc = rb_enc_get(str);
 
   while (ptr < end)
   {
-    str_cp = rb_enc_codepoint_len(ptr, end, &n, enc);
+    str_cp = rb_enc_codepoint_len(ptr, end, &n, utf8);
     if (!(*func)(str_cp, cp_arr, len, data, memo))
     {
       return Qfalse;
@@ -1031,12 +1037,13 @@ single_byte_optimizable(VALUE str)
 }
 
 static inline VALUE
-each_cp(VALUE str, str_cp_handler func, cs_ar *cp_arr, cs_cp len, struct cs_data *data, VALUE *memo)
+each_cp(VALUE str, str_cp_handler func, cs_ar *cp_arr, cs_cp len, struct cs_data *data, VALUE memo)
 {
   if (single_byte_optimizable(str))
   {
     return each_sb_cp(str, func, cp_arr, len, data, memo);
   }
+
   return each_mb_cp(str, func, cp_arr, len, data, memo);
 }
 
@@ -1062,11 +1069,11 @@ cs_class_method_of_string(VALUE self, VALUE string)
 }
 
 static inline int
-count_str_cp(unsigned int str_cp, cs_ar *cp_arr, cs_cp len, struct cs_data *data, VALUE *memo)
+count_str_cp(unsigned int str_cp, cs_ar *cp_arr, cs_cp len, struct cs_data *data, VALUE memo)
 {
   if (tst_cp(cp_arr, len, str_cp))
   {
-    *memo += 1;
+    *((VALUE *)memo) += 1;
   }
   return 1;
 }
@@ -1074,17 +1081,17 @@ count_str_cp(unsigned int str_cp, cs_ar *cp_arr, cs_cp len, struct cs_data *data
 static VALUE
 cs_method_count_in(VALUE self, VALUE str)
 {
-  VALUE count;
+  long count;
   struct cs_data *data;
   raise_arg_err_unless_string(str);
   data = cs_fetch_data(self);
   count = 0;
-  each_cp(str, count_str_cp, data->cps, data->len, data, &count);
-  return INT2NUM((int)count);
+  each_cp(str, count_str_cp, data->cps, data->len, data, (VALUE)&count);
+  return LONG2FIX(count);
 }
 
 static inline int
-str_cp_in_arr(unsigned int str_cp, cs_ar *cp_arr, cs_cp len, struct cs_data *data, VALUE *memo)
+str_cp_in_arr(unsigned int str_cp, cs_ar *cp_arr, cs_cp len, struct cs_data *data, VALUE memo)
 {
   return tst_cp(cp_arr, len, str_cp);
 }
@@ -1099,11 +1106,11 @@ cs_method_cover_p(VALUE self, VALUE str)
 }
 
 static inline int
-add_str_cp_to_str_arr(unsigned int str_cp, cs_ar *cp_arr, cs_cp len, struct cs_data *data, VALUE *memo)
+add_str_cp_to_str_arr(unsigned int str_cp, cs_ar *cp_arr, cs_cp len, struct cs_data *data, VALUE memo)
 {
   if (tst_cp(cp_arr, len, str_cp))
   {
-    rb_ary_push(memo[0], rb_enc_uint_chr((int)str_cp, (rb_encoding *)memo[1]));
+    rb_ary_push(memo, rb_enc_uint_chr((int)str_cp, rb_utf8_encoding()));
   }
   return 1;
 }
@@ -1111,18 +1118,17 @@ add_str_cp_to_str_arr(unsigned int str_cp, cs_ar *cp_arr, cs_cp len, struct cs_d
 static VALUE
 cs_method_scan(VALUE self, VALUE str)
 {
-  VALUE memo[2];
+  VALUE memo;
   struct cs_data *data;
   raise_arg_err_unless_string(str);
   data = cs_fetch_data(self);
-  memo[0] = rb_ary_new();
-  memo[1] = (VALUE)rb_enc_get(str);
+  memo = rb_ary_new();
   each_cp(str, add_str_cp_to_str_arr, data->cps, data->len, data, memo);
-  return memo[0];
+  return memo;
 }
 
 static inline int
-str_cp_not_in_arr(unsigned int str_cp, cs_ar *cp_arr, cs_cp len, struct cs_data *data, VALUE *memo)
+str_cp_not_in_arr(unsigned int str_cp, cs_ar *cp_arr, cs_cp len, struct cs_data *data, VALUE memo)
 {
   return !tst_cp(cp_arr, len, str_cp);
 }
@@ -1146,9 +1152,9 @@ cs_apply_to_str(VALUE set, VALUE str, int delete, int bang)
   cs_cp cs_len;
   VALUE orig_str_len;
 
-  rb_encoding *enc;
+  rb_encoding *orig_enc, *utf8;
   char *s, *send, *t;
-  int ascompat, cr;
+  int orig_was_utf8, cr;
 
   raise_arg_err_unless_string(str);
 
@@ -1159,24 +1165,34 @@ cs_apply_to_str(VALUE set, VALUE str, int delete, int bang)
     return bang ? Qnil : str;
   }
 
-  if (!bang)
+  orig_enc = rb_enc_get(str);
+  utf8 = rb_utf8_encoding();
+  orig_was_utf8 = orig_enc == utf8;
+
+  if (!orig_was_utf8 && orig_enc != rb_usascii_encoding())
   {
-    str = rb_str_dup(str);
+    str = rb_str_encode(str, rb_enc_from_encoding(utf8), 0, Qnil);
+  }
+  else
+  {
+    if (!bang)
+    {
+      str = rb_str_dup(str);
+    }
   }
 
   cps = cs_fetch_cps(set, &cs_len);
   rb_str_modify(str);
-  enc = rb_enc_get(str);
-  ascompat = rb_enc_asciicompat(enc);
   s = t = RSTRING_PTR(str);
   send = RSTRING_END(str);
-  cr = ascompat ? ENC_CODERANGE_7BIT : ENC_CODERANGE_VALID;
+  cr = ENC_CODERANGE_7BIT;
+
   while (s < send)
   {
     unsigned int c;
     int clen;
 
-    if (ascompat && (c = *(unsigned char *)s) < 0x80)
+    if ((c = *(unsigned char *)s) < 0x80)
     {
       if (tst_cp(cps, cs_len, c) != delete)
       {
@@ -1188,12 +1204,12 @@ cs_apply_to_str(VALUE set, VALUE str, int delete, int bang)
     }
     else
     {
-      c = rb_enc_codepoint_len(s, send, &clen, enc);
+      c = rb_enc_codepoint_len(s, send, &clen, utf8);
 
       if (tst_cp(cps, cs_len, c) != delete)
       {
         if (t != s)
-          rb_enc_mbcput(c, t, enc);
+          rb_enc_mbcput(c, t, utf8);
         t += clen;
         if (cr == ENC_CODERANGE_7BIT)
           cr = ENC_CODERANGE_VALID;
@@ -1208,6 +1224,11 @@ cs_apply_to_str(VALUE set, VALUE str, int delete, int bang)
   if (bang && (RSTRING_LEN(str) == (long)orig_str_len)) // string unchanged
   {
     return Qnil;
+  }
+
+  if (!orig_was_utf8)
+  {
+    return rb_str_encode(str, rb_enc_from_encoding(orig_enc), 0, Qnil);
   }
 
   return str;

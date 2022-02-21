@@ -8,7 +8,7 @@ class CharacterSet
 
         def of_string(str)
           raise ArgumentError, 'pass a String' unless str.respond_to?(:codepoints)
-          str.codepoints.each_with_object(new) { |cp, set| set << cp }
+          str.encode('utf-8').each_codepoint.with_object(new) { |cp, set| set << cp }
         end
       end
 
@@ -40,16 +40,18 @@ class CharacterSet
       end
 
       def count_in(string)
-        str!(string).each_codepoint.count { |cp| include?(cp) }
+        utf8_str!(string).each_codepoint.count { |cp| include?(cp) }
       end
 
       def cover?(string)
-        str!(string).each_codepoint { |cp| return false unless include?(cp) }
+        utf8_str!(string).each_codepoint { |cp| return false unless include?(cp) }
         true
       end
 
       def delete_in(string)
-        make_new_str(string) { |cp, new_str| include?(cp) || (new_str << cp) }
+        utf8_str!(string).each_codepoint.with_object('') do |cp, new_str|
+          include?(cp) || (new_str << cp)
+        end.encode(string.encoding)
       end
 
       def delete_in!(string)
@@ -58,7 +60,9 @@ class CharacterSet
       end
 
       def keep_in(string)
-        make_new_str(string) { |cp, new_str| include?(cp) && (new_str << cp) }
+        utf8_str!(string).each_codepoint.with_object('') do |cp, new_str|
+          include?(cp) && (new_str << cp)
+        end.encode(string.encoding)
       end
 
       def keep_in!(string)
@@ -67,14 +71,13 @@ class CharacterSet
       end
 
       def scan(string)
-        encoding = str!(string).encoding
-        string.each_codepoint.inject([]) do |arr, cp|
-          include?(cp) ? arr.push(cp.chr(encoding)) : arr
+        utf8_str!(string).each_codepoint.with_object([]) do |cp, arr|
+          arr.push(cp.chr('utf-8')) if include?(cp)
         end
       end
 
       def used_by?(string)
-        str!(string).each_codepoint { |cp| return true if include?(cp) }
+        utf8_str!(string).each_codepoint { |cp| return true if include?(cp) }
         false
       end
 
@@ -115,15 +118,13 @@ class CharacterSet
         num >= 0 && num <= 16 or raise ArgumentError, 'plane must be between 0 and 16'
       end
 
-      def str!(obj)
+      def utf8_str!(obj)
         raise ArgumentError, 'pass a String' unless obj.respond_to?(:codepoints)
-        obj
+        obj.encode('utf-8')
       end
 
       def make_new_str(original, &block)
-        str!(original)
-          .each_codepoint
-          .each_with_object(''.encode(original.encoding), &block)
+        utf8_str!(original).each_codepoint.with_object('', &block)
       end
     end
   end

@@ -38,6 +38,13 @@ shared_examples :character_set_keep_in do |variant|
     end
   end
 
+  it 'works with Strings in non-utf8-compatible encodings' do
+    str = 'äü'.encode('EUC-JP')
+    result = variant['ü'].keep_in(str)
+    expect(result.encoding).to eq Encoding.find('EUC-JP')
+    expect(result).to eq 'ü'.encode('EUC-JP')
+  end
+
   it 'raises an ArgumentError if passed a non-String' do
     expect { variant[].keep_in(false) }.to raise_error(ArgumentError)
     expect { variant[].keep_in(nil) }.to raise_error(ArgumentError)

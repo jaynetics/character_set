@@ -11,6 +11,11 @@ shared_examples :character_set_used_by_p do |variant|
     end
   end
 
+  it 'works with Strings in non-utf8-compatible encodings' do
+    expect(variant['ü'].used_by?('ü'.encode('EUC-JP'))).to be true
+    expect(variant['ü'].used_by?('ä'.encode('EUC-JP'))).to be false
+  end
+
   it 'raises an ArgumentError if passed a non-String' do
     expect { variant[].used_by?(false) }.to raise_error(ArgumentError)
     expect { variant[].used_by?(nil) }.to raise_error(ArgumentError)

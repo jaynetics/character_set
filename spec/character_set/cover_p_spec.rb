@@ -12,6 +12,11 @@ shared_examples :character_set_cover_p do |variant|
     end
   end
 
+  it 'works with Strings in non-utf8-compatible encodings' do
+    expect(variant['ü'].cover?('üü'.encode('EUC-JP'))).to be true
+    expect(variant['ü'].cover?('äü'.encode('EUC-JP'))).to be false
+  end
+
   it 'raises an ArgumentError if passed a non-String' do
     expect { variant[].cover?(false) }.to raise_error(ArgumentError)
     expect { variant[].cover?(nil) }.to raise_error(ArgumentError)

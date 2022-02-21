@@ -22,11 +22,17 @@ shared_examples :character_set_scan do |variant|
   end
 
   TESTED_ENCODINGS.each do |enc|
-    it "works with #{enc} strings, keeping the original encoding" do
+    it "works with #{enc} strings" do
       str = 'abz'.encode(enc)
       result = variant[97, 98, 99].scan(str)
-      expect(result).to eq ['a'.encode(enc), 'b'.encode(enc)]
+      expect(result).to eq ['a', 'b']
     end
+  end
+
+  it 'works with Strings in non-utf8-compatible encodings' do
+    str = 'äü'.encode('EUC-JP')
+    result = variant['ü'].scan(str)
+    expect(result).to eq ['ü']
   end
 
   it 'raises an ArgumentError if passed a non-String' do
