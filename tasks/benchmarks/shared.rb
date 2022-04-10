@@ -1,8 +1,5 @@
-lib = File.expand_path('../lib', __dir__)
-$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-
 require 'benchmark/ips'
-require 'character_set'
+require_relative '../../lib/character_set'
 if RUBY_VERSION.to_f >= 3.0 && !RUBY_PLATFORM[/java/i]
   require 'sorted_set'
 else
@@ -10,21 +7,22 @@ else
 end
 
 def benchmark(caption: nil, cases: {})
-  puts caption
-
-  report = Benchmark.ips do |x|
-    cases.each do |label, callable|
-      x.report(label, &callable)
+  with_stdouts($stdout, string_io = StringIO.new) do
+    puts caption
+    Benchmark.ips do |x|
+      cases.each { |label, callable| x.report(label, &callable) }
+      x.compare!
     end
-    x.compare!
   end
+  ($benchmark_results ||= {})[caption] = string_io.string
+end
 
-  return unless $store_comparison_results
-
-  old_stdout = $stdout.clone
-  captured_stdout = StringIO.new
-  $stdout = captured_stdout
-  report.run_comparison
-  $store_comparison_results[caption] = captured_stdout.string
+def with_stdouts(*ios)
+  old_stdout = $stdout
+  ios.define_singleton_method(:method_missing) { |*args| each { |io| io.send(*args) } }
+  ios.define_singleton_method(:respond_to?) { |*args| IO.respond_to?(*args) }
+  $stdout = ios
+  yield
+ensure
   $stdout = old_stdout
 end
