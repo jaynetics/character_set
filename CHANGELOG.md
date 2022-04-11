@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Added
+
+- new codepoints for `::assigned` and `::emoji` predefined sets, as in Ruby 3.2.0
+
 ### Fixed
 
 - fixed processing of Strings that are not ASCII- or UTF8-encoded
