@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [1.7.0] - 2023-05-12
+
 ### Added
 
 - new codepoints for `::assigned` and `::emoji` predefined sets, as in Ruby 3.2.0
