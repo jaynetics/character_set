@@ -14,6 +14,7 @@ shared_examples :character_set_intersect_p do |variant|
     expect(variant[97, 98, 99].intersect?([96])).to eq false
     expect(variant[97, 98, 99].intersect?([98])).to eq true
     expect(variant[97, 98, 99].intersect?(sorted_set_class[98])).to eq true
+    expect(variant[97, 98, 99].intersect?(Class.new(sorted_set_class)[98])).to eq true
   end
 end
 
