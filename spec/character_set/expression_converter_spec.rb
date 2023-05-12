@@ -8,7 +8,6 @@ describe CharacterSet::ExpressionConverter do
     end
 
     it 'converts into the given Set class' do
-      sorted_set_class = CharacterSet::RubyFallback::SortedSet
       expect(result(/a/, to: CharacterSet)).to       eq CharacterSet[97]
       expect(result(/a/, to: CharacterSet::Pure)).to eq CharacterSet::Pure[97]
       expect(result(/a/, to: sorted_set_class)).to   eq sorted_set_class[97]

@@ -20,6 +20,14 @@ describe CharacterSet::Parser do
       expect(result('a'..'c')).to eq [97, 98, 99]
     end
 
+    it 'takes a Set of Integers' do
+      expect(result(sorted_set_class[97, 98, 99])).to eq [97, 98, 99]
+    end
+
+    it 'takes a Set of Strings' do
+      expect(result(sorted_set_class['a', 'b', 'c'])).to eq [97, 98, 99]
+    end
+
     it 'takes a CharacterSet' do
       set = CharacterSet[97, 98, 99]
       expect(result(set)).to eq [97, 98, 99]

@@ -25,3 +25,7 @@ RSpec.configure do |config|
     c.syntax = [:expect, :should] # :should is for ruby-spec examples
   end
 end
+
+def sorted_set_class
+  CharacterSet::RubyFallback::SortedSet
+end
