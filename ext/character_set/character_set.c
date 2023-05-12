@@ -675,6 +675,18 @@ cs_method_proper_superset_p(VALUE self, VALUE other)
   return (is_superset && is_proper) ? Qtrue : Qfalse;
 }
 
+static VALUE
+cs_method_spaceship_operator(VALUE self, VALUE other)
+{
+  if (cs_method_eql_p(self, other))
+    return INT2FIX(0);
+  if (cs_method_proper_subset_p(self, other))
+    return INT2FIX(-1);
+  if (cs_method_proper_superset_p(self, other))
+    return INT2FIX(1);
+  return Qnil;
+}
+
 // *******************************
 // `CharacterSet`-specific methods
 // *******************************
@@ -1324,6 +1336,7 @@ void Init_character_set()
   rb_define_method(cs, ">=", cs_method_superset_p, 1);
   rb_define_method(cs, "proper_superset?", cs_method_proper_superset_p, 1);
   rb_define_method(cs, ">", cs_method_proper_superset_p, 1);
+  rb_define_method(cs, "<=>", cs_method_spaceship_operator, 1);
 
   // `CharacterSet`-specific methods
 
