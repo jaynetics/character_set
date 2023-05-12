@@ -165,8 +165,8 @@ class CharacterSet
         end
 
         def divide(&func)
-          CharacterSet.require_optional_dependency('set', __method__)
-          Set.new(to_a).divide(&func)
+          require 'character_set/ruby_fallback/vendored_set_classes'
+          CharacterSet::RubyFallback::Set.new(to_a).divide(&func)
         end
       RUBY
 

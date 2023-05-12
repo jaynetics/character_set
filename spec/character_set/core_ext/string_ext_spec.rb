@@ -25,7 +25,7 @@ describe 'CharacterSet String core extension' do
 
     it 'raises if there is no predefined set matching the Symbol' do
       expect { 'foo'.send(string_method, :fancy_set) }
-        .to raise_error(/undefined method `fancy_set' for CharacterSet/)
+        .to raise_error(/undefined method .*fancy_set.* for .*CharacterSet/)
     end
   end
 

@@ -9,7 +9,7 @@ task :sync_ruby_spec do
 
   # download fresh specs from ruby/spec repository
   variants.each do |_, dir|
-    FileUtils.rm_rf(dir) if File.exist?(dir)
+    FileUtils.rm_rf(dir)
     `svn export https://github.com/ruby/spec/trunk/library/set/sortedset #{dir}`
   end
 

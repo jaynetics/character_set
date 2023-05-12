@@ -3,7 +3,7 @@ class CharacterSet
     module SetMethods
       (Enumerable.instance_methods -
         %i[include? member? to_a] +
-        %i[empty? length size]).each do |mthd|
+        %i[empty? hash length size]).each do |mthd|
         class_eval <<-RUBY, __FILE__, __LINE__ + 1
           def #{mthd}(*args, &block)
             @__set.#{mthd}(*args, &block)
@@ -11,8 +11,8 @@ class CharacterSet
         RUBY
       end
 
-      %i[< <= > >= disjoint? intersect? proper_subset? proper_superset?
-         subset? superset?].each do |mthd|
+      %i[< <= > >= === disjoint? include? intersect? member?
+         proper_subset? proper_superset? subset? superset?].each do |mthd|
         class_eval <<-RUBY, __FILE__, __LINE__ + 1
           def #{mthd}(enum, &block)
             if enum.is_a?(CharacterSet) || enum.is_a?(CharacterSet::Pure)
@@ -30,15 +30,6 @@ class CharacterSet
           def #{mthd}(*args, &block)
             result = @__set.#{mthd}(*args, &block)
             result.is_a?(Set) ? self : result
-          end
-        RUBY
-      end
-
-      # revert if https://github.com/knu/sorted_set/issues/2 is resolved
-      %i[=== include? member?].each do |mthd|
-        class_eval <<-RUBY, __FILE__, __LINE__ + 1
-          def #{mthd}(*args, &block)
-            !!@__set.#{mthd}(*args, &block)
           end
         RUBY
       end
@@ -83,13 +74,8 @@ class CharacterSet
 
       def eql?(other)
         return false unless other.is_a?(self.class)
-        # revert if https://github.com/knu/sorted_set/issues/3 is resolved
-        hash == other.hash
-      end
 
-      # revert if https://github.com/knu/sorted_set/issues/3 is resolved
-      def hash
-        @__set.to_a.hash
+        @__set.eql?(other.instance_variable_get(:@__set))
       end
 
       def initialize_dup(orig)

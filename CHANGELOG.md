@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 
 - fixed processing of Strings that are not ASCII- or UTF8-encoded
+- removed dependency on `set` and `sorted_set`
+  - thanks to https://github.com/mikebaldry for reporting a related issue (#2)
 
 ## [1.6.0] - 2022-02-16
 

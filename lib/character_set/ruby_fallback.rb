@@ -1,10 +1,6 @@
-if RUBY_VERSION.to_f >= 3.0 && !RUBY_PLATFORM[/java/i]
-  require 'sorted_set'
-else
-  require 'set'
-end
 require 'character_set/ruby_fallback/set_methods'
 require 'character_set/ruby_fallback/character_set_methods'
+require 'character_set/ruby_fallback/vendored_set_classes'
 
 class CharacterSet
   module RubyFallback
@@ -16,7 +12,7 @@ class CharacterSet
     end
 
     def initialize(enum = [])
-      @__set = SortedSet.new
+      @__set = CharacterSet::RubyFallback::SortedSet.new
       super
     end
   end
