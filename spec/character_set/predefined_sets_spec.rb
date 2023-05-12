@@ -148,4 +148,10 @@ describe CharacterSet::PredefinedSets do
 
     it_behaves_like :predefined_character_set, :whitespace
   end
+
+  it 'raises an error when trying to lazy-load in a Ractor' do
+    CharacterSet::PredefinedSets.instance_variable_set(:@ascii, nil)
+    stub_const('Ractor', double(current: 1, main: 2))
+    expect { CharacterSet.ascii }.to raise_error(/lazy-loaded/)
+  end
 end

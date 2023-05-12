@@ -3,7 +3,7 @@
 [![Gem Version](https://badge.fury.io/rb/character_set.svg)](http://badge.fury.io/rb/character_set)
 [![Build Status](https://github.com/jaynetics/character_set/workflows/tests/badge.svg)](https://github.com/jaynetics/character_set/actions)
 [![Build Status](https://github.com/jaynetics/character_set/workflows/gouteur/badge.svg)](https://github.com/jaynetics/character_set/actions)
-[![codecov](https://codecov.io/gh/jaynetics/character_set/branch/master/graph/badge.svg)](https://codecov.io/gh/jaynetics/character_set)
+[![codecov](https://codecov.io/gh/jaynetics/character_set/branch/main/graph/badge.svg)](https://codecov.io/gh/jaynetics/character_set)
 
 This is a C-extended Ruby gem to work with sets of Unicode codepoints.
 

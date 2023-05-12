@@ -165,8 +165,12 @@ class CharacterSet
         end
 
         def divide(&func)
-          require 'character_set/ruby_fallback/vendored_set_classes'
+          require 'character_set/ruby_fallback'
           CharacterSet::RubyFallback::Set.new(to_a).divide(&func)
+        end
+
+        def join(separator = '')
+          to_a(true).join(separator)
         end
       RUBY
 

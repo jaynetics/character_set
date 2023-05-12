@@ -122,10 +122,6 @@ class CharacterSet
         raise ArgumentError, 'pass a String' unless obj.respond_to?(:codepoints)
         obj.encode('utf-8')
       end
-
-      def make_new_str(original, &block)
-        utf8_str!(original).each_codepoint.with_object('', &block)
-      end
     end
   end
 end

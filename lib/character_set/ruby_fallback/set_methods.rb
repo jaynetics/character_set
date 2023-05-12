@@ -11,7 +11,7 @@ class CharacterSet
         RUBY
       end
 
-      %i[< <= > >= === disjoint? include? intersect? member?
+      %i[< <= <=> > >= === disjoint? include? intersect? member?
          proper_subset? proper_superset? subset? superset?].each do |mthd|
         class_eval <<-RUBY, __FILE__, __LINE__ + 1
           def #{mthd}(enum, &block)
@@ -23,9 +23,8 @@ class CharacterSet
         RUBY
       end
 
-      %i[<< add add? clear collect! delete delete? delete_if
-         each filter! map! keep_if reject!
-         select! subtract].each do |mthd|
+      %i[<< add add? clear delete delete? delete_if each filter! keep_if
+         reject! select! subtract].each do |mthd|
         class_eval <<-RUBY, __FILE__, __LINE__ + 1
           def #{mthd}(*args, &block)
             result = @__set.#{mthd}(*args, &block)

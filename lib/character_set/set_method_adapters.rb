@@ -22,7 +22,7 @@ class CharacterSet
 
     # Allow some methods to take an Enum just as well as another CharacterSet.
     # Tested by ruby-spec.
-    %w[& + - ^ | difference disjoint? intersect? intersection
+    %w[& + - ^ | <=> difference disjoint? intersect? intersection
        subtract union].each do |method|
       class_eval <<-RUBY, __FILE__, __LINE__ + 1
         def #{method}(arg)

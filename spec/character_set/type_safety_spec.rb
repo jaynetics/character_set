@@ -18,7 +18,7 @@ item_methods = %w[add add? delete delete? include? member?]
   end
 end
 
-mass_methods = %w[merge subtract + - & ^ > >= < <= intersect? disjoint?]
+mass_methods = %w[merge subtract + - & ^ > >= < <= <=> intersect? disjoint?]
 
 [CharacterSet, CharacterSet::Pure].product(mass_methods).each do |variant, method|
   describe "#{variant}##{method}" do
