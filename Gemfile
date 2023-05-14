@@ -14,7 +14,7 @@ gem 'regexp_parser', '~> 2.1'
 gem 'regexp_property_values', '~> 1.0'
 gem 'rspec', '~> 3.8'
 if RUBY_VERSION.to_f >= 2.7
-  gem 'codecov', '~> 0.2.12'
   gem 'gouteur', '~> 1.0.0'
   gem 'rubocop', '~> 1.8'
+  gem 'simplecov-cobertura'
 end
