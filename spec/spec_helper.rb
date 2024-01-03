@@ -1,15 +1,15 @@
-if ENV['CI'] && RUBY_VERSION.start_with?('2.7')
+require 'bundler/setup'
+Dir[File.join(__dir__, 'support', '*.rb')].sort.each { |file| require file }
+
+if ENV['CI'] && RUBY_VERSION.start_with?('3.2')
   require 'simplecov'
   require 'simplecov-cobertura'
   SimpleCov.formatter = SimpleCov::Formatter::CoberturaFormatter
   SimpleCov.start
 end
 
-require 'bundler/setup'
 require 'character_set'
 require 'character_set/pure'
-
-Dir[File.join(__dir__, 'support', '*.rb')].sort.each { |file| require file }
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
