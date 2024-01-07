@@ -44,6 +44,7 @@ describe CharacterSet::ExpressionConverter do
 
     it 'supports types with the full unicode range' do
       expect(result(/(?u:\s)/)).to be > CharacterSet.from_ranges(9..13, 32..32)
+      expect(result(/(?u:\R)/)).to be > CharacterSet.from_ranges(10..13)
     end
 
     it 'supports ranges' do
@@ -116,6 +117,14 @@ describe CharacterSet::ExpressionConverter do
       expect(result(/\b/)).to eq CharacterSet[]
       expect(result(/a+/)).to eq CharacterSet['a']
       expect(result(/(a)\1/)).to eq CharacterSet['a']
+    end
+
+    it 'raises for unknown expressions' do
+      klass = Class.new(Regexp::Expression::Base) do
+        def initialize; end # rubocop:disable Lint/MissingSuper
+      end
+      allow(Regexp::Parser).to receive(:parse).and_return klass.new
+      expect { result(//) }.to raise_error(described_class::Error)
     end
 
     it 'raises for non-expressions' do
