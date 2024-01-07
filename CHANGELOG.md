@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [1.8.0] - 2024-01-07
+
 ### Added
 
 - support for `#<=>` and `#join`, which were added to `set` in the meantime
