@@ -15,3 +15,6 @@ Lint/AmbiguousOperatorPrecedence:
 
 Lint/AmbiguousRegexpLiteral:
   Enabled: false
+
+Metrics:
+  Enabled: false

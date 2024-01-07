@@ -43,7 +43,7 @@ CharacterSet.parse('[a-c]')
 CharacterSet.parse('\U00000061-\U00000063')
 ```
 
-If the gems [`regexp_parser`](https://github.com/ammar/regexp_parser) and [`regexp_property_values`](https://github.com/jaynetics/regexp_property_values) are installed, `Regexp` and unicode property names can also be read. Regexp intersections, negations, and set nesting are covered, but the `i`-flag is ignored; call `#case_insensitive` on the result if needed.
+If the gems [`regexp_parser`](https://github.com/ammar/regexp_parser) and [`regexp_property_values`](https://github.com/jaynetics/regexp_property_values) are installed, `Regexp` instances and unicode property names can also be read.
 
 ```ruby
 CharacterSet.of(/./) # => #<CharacterSet (size: 1112064)>

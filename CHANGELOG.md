@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 
 - support for `#<=>` and `#join`, which were added to `set` in the meantime
+- support for getting the (overall) character set of a Regexp with multiple expressions
+- support for global and local case-insensitivity in Regexp inputs
+- `Regexp#{covered_by_character_set?,uses_character_set?}` methods (if core ext is used)
 
 ## [1.7.0] - 2023-05-12
 

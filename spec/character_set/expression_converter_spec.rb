@@ -2,32 +2,28 @@ require 'regexp_parser'
 
 describe CharacterSet::ExpressionConverter do
   describe '::convert' do
-    def result(arg, test_root = false, to: CharacterSet)
-      exp = Regexp::Parser.parse(arg)
-      CharacterSet::ExpressionConverter.convert(test_root ? exp : exp[0], to)
+    def result(arg, to: CharacterSet)
+      root = Regexp::Parser.parse(arg)
+      CharacterSet::ExpressionConverter.convert(root, to)
     end
 
     it 'converts into the given Set class' do
-      expect(result(/a/, to: CharacterSet)).to       eq CharacterSet[97]
-      expect(result(/a/, to: CharacterSet::Pure)).to eq CharacterSet::Pure[97]
-      expect(result(/a/, to: sorted_set_class)).to   eq sorted_set_class[97]
+      expect(result(/a/, to: CharacterSet)).to       eq CharacterSet['a']
+      expect(result(/a/, to: CharacterSet::Pure)).to eq CharacterSet::Pure['a']
+      expect(result(/a/, to: sorted_set_class)).to   eq sorted_set_class['a']
     end
 
     it 'parses root expressions recursively' do
-      expect(result(/[abc]/, true)).to eq CharacterSet['a', 'b', 'c']
+      expect(result(/[abc]/)).to eq CharacterSet['a', 'b', 'c']
     end
 
-    it 'raises when passed a root containing != 1 expression' do
-      expect { result(/[a][b]/, true) }.to raise_error(described_class::Error)
-      expect { result(//, true) }.to raise_error(described_class::Error)
+    it 'supports multiple subexpressions' do
+      expect(result(/[a][b]/)).to eq CharacterSet['a', 'b']
     end
 
-    it 'parses literals of length 1' do
+    it 'parses literals' do
       expect(result(/a/)).to eq CharacterSet['a']
-    end
-
-    it 'raises when passed a literal with length != 1 outside a set' do
-      expect { result(/abc/) }.to raise_error(described_class::Error)
+      expect(result(/abc/)).to eq CharacterSet['a', 'b', 'c']
     end
 
     it 'supports the match-all dot' do
@@ -39,6 +35,7 @@ describe CharacterSet::ExpressionConverter do
       expect(result(/\h/)).to eq CharacterSet.from_ranges(48..57, 65..70, 97..102)
       expect(result(/\w/)).to eq CharacterSet.from_ranges(48..57, 65..90, 95..95, 97..122)
       expect(result(/\s/)).to eq CharacterSet.from_ranges(9..13, 32..32)
+      expect(result(/\R/)).to eq CharacterSet.from_ranges(10..13)
     end
 
     it 'supports negative types' do
@@ -47,10 +44,6 @@ describe CharacterSet::ExpressionConverter do
 
     it 'supports types with the full unicode range' do
       expect(result(/(?u:\s)/)).to be > CharacterSet.from_ranges(9..13, 32..32)
-    end
-
-    it 'raises when passed an unsupported type' do
-      expect { result(/\R/) }.to raise_error(described_class::Error)
     end
 
     it 'supports ranges' do
@@ -95,8 +88,8 @@ describe CharacterSet::ExpressionConverter do
       expect(result(/()/)).to eq CharacterSet[]
     end
 
-    it 'raises for groups containing more than one expression' do
-      expect { result(/(\d\w)/) }.to raise_error(described_class::Error)
+    it 'supports groups containing more than one expression' do
+      expect(result(/([a][b])/)).to eq CharacterSet['a', 'b']
     end
 
     it 'supports alternations' do
@@ -107,12 +100,22 @@ describe CharacterSet::ExpressionConverter do
       expect(result(/(|[b-d])/)).to eq CharacterSet['b', 'c', 'd']
     end
 
-    it 'raises for alternations branches containing more than one expression' do
-      expect { result(/(a|\d\w)/) }.to raise_error(described_class::Error)
+    it 'supports alternations branches containing more than one expression' do
+      expect(result(/(a|b(c|d))/)).to eq CharacterSet['a', 'b', 'c', 'd']
     end
 
-    it 'raises for unsupported expressions' do
-      expect { result(/\b/) }.to raise_error(described_class::Error)
+    it 'supports global and local case insensitivity' do
+      expect(result(/a/i)).to eq CharacterSet['a', 'A']
+      expect(result(/\x61/i)).to eq CharacterSet['a', 'A']
+      expect(result(/\u{61}/i)).to eq CharacterSet['a', 'A']
+      expect(result(/a(?i)b/)).to eq CharacterSet['a', 'b', 'B']
+      expect(result(/a(?i:b)c/)).to eq CharacterSet['a', 'b', 'B', 'c']
+    end
+
+    it 'ignores zero-length and repeat expressions' do
+      expect(result(/\b/)).to eq CharacterSet[]
+      expect(result(/a+/)).to eq CharacterSet['a']
+      expect(result(/(a)\1/)).to eq CharacterSet['a']
     end
 
     it 'raises for non-expressions' do
