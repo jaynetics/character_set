@@ -1,11 +1,11 @@
 shared_examples :character_set_require_optional_dependency do |variant|
   it 'returns true if the dependency is available' do
-    expect(variant.require_optional_dependency('csv', :foo)).to be true
+    expect(variant.require_optional_dependency('uri', :foo)).to be true
   end
 
   it 'returns true for already-loaded dependencies' do
-    variant.require_optional_dependency('csv', :foo)
-    expect(variant.require_optional_dependency('csv', :foo)).to be true
+    variant.require_optional_dependency('uri', :foo)
+    expect(variant.require_optional_dependency('uri', :foo)).to be true
   end
 
   it 'raises LoadError if the dependency is not available' do
