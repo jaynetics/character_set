@@ -21,11 +21,11 @@ describe CharacterSet::Parser do
     end
 
     it 'takes a Set of Integers' do
-      expect(result(sorted_set_class[97, 98, 99])).to eq [97, 98, 99]
+      expect(result(Set[97, 98, 99])).to eq [97, 98, 99]
     end
 
     it 'takes a Set of Strings' do
-      expect(result(sorted_set_class['a', 'b', 'c'])).to eq [97, 98, 99]
+      expect(result(Set['a', 'b', 'c'])).to eq [97, 98, 99]
     end
 
     it 'takes a CharacterSet' do

@@ -18,7 +18,7 @@ Gem::Specification.new do |s|
   end
   s.require_paths = ['lib']
 
-  s.extensions  = %w[ext/character_set/extconf.rb]
+  s.extensions    = %w[ext/character_set/extconf.rb]
 
   s.required_ruby_version = '>= 2.1.0'
 end

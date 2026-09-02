@@ -10,6 +10,7 @@ end
 
 require 'character_set'
 require 'character_set/pure'
+require 'set' # for older Rubies, used in specs as a foreign Enumerable
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
@@ -22,8 +23,4 @@ RSpec.configure do |config|
   config.mock_with :rspec do |c|
     c.syntax = [:expect, :should] # :should is for ruby-spec examples
   end
-end
-
-def sorted_set_class
-  CharacterSet::RubyFallback::SortedSet
 end
