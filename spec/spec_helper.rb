@@ -10,6 +10,7 @@ end
 
 require 'character_set'
 require 'character_set/pure'
+require 'leto'
 require 'set' # for older Rubies, used in specs as a foreign Enumerable
 
 RSpec.configure do |config|

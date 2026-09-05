@@ -19,6 +19,12 @@ shared_examples :character_set_classify do |variant|
     classified = variant[1, 2, 3, 4].classify(&:odd?)
     classified.should == { true => variant[1, 3], false => variant[2, 4] }
   end
+
+  it 'does not create shared mutable state' do
+    set1 = variant[96, 97]
+    classified = set1.classify(&:odd?)
+    expect(Leto.shared_mutable_state?(set1, *classified.values)).to eq false
+  end
 end
 
 describe "CharacterSet#classify" do

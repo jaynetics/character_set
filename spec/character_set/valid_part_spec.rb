@@ -6,6 +6,12 @@ shared_examples :character_set_valid_part do |variant|
     expect(result.include?(0xEEEE)).to be true
     expect(result.include?(0x10000)).to be false
   end
+
+  it 'does not create shared mutable state' do
+    set1 = variant[96, 97]
+    set2 = set1.valid_part
+    expect(Leto.shared_mutable_state?(set1, set2, variant.surrogate)).to eq false
+  end
 end
 
 describe "CharacterSet#valid_part" do
