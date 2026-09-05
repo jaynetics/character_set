@@ -209,11 +209,13 @@ class CharacterSet
       def initialize_dup(orig)
         super
         @__hash = @__hash.dup
+        @__keys = nil # dups are usually mutated, so don't bother copying
       end
 
       def initialize_clone(orig)
         super
         @__hash = @__hash.clone
+        @__keys = @__keys && @__keys.clone # keep frozen keys for frozen clones
       end
 
       private

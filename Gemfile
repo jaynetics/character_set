@@ -11,6 +11,7 @@ gem 'get_process_mem', '~> 0.2.3'
 gem 'bigdecimal' # undeclared get_process_mem dependency
 gem 'ostruct' # undeclared get_process_mem dependency
 gem 'irb'
+gem 'leto'
 gem 'rake', '~> 13.1'
 gem 'rake-compiler', '~> 1.1'
 gem 'range_compressor', '~> 1.0'

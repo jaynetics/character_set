@@ -1,7 +1,7 @@
 require 'bundler/setup'
 Dir[File.join(__dir__, 'support', '*.rb')].sort.each { |file| require file }
 
-if ENV['CI'] && RUBY_VERSION.start_with?('3.2')
+if ENV['CI'] && RUBY_VERSION.start_with?('3.4')
   require 'simplecov'
   require 'simplecov-cobertura'
   SimpleCov.formatter = SimpleCov::Formatter::CoberturaFormatter
@@ -10,6 +10,7 @@ end
 
 require 'character_set'
 require 'character_set/pure'
+require 'leto'
 require 'set' # for older Rubies, used in specs as a foreign Enumerable
 
 RSpec.configure do |config|

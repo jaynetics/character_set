@@ -17,6 +17,12 @@ shared_examples :character_set_case_insensitive do |variant|
       expect(variant['ﬃ'].case_insensitive).to eq variant['ﬃ']
     end
   end
+
+  it 'does not create shared mutable state' do
+    set1 = variant[96, 97]
+    set2 = set1.case_insensitive
+    expect(Leto.shared_mutable_state?(set1, set2)).to eq false
+  end
 end
 
 describe "CharacterSet#case_insensitive" do
