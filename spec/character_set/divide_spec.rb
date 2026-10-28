@@ -21,8 +21,14 @@ shared_examples :character_set_divide do |variant|
     it "yields each two Objects to the block" do
       ret = []
       variant[1, 2].divide { |x, y| ret << [x, y] }
-      ret.should == [[1, 1], [1, 2], [2, 1], [2, 2]]
+      ret.should == [[1, 2], [2, 1]]
     end
+  end
+
+  it 'does not create shared mutable state' do
+    set1 = variant[96, 97]
+    divided = set1.divide(&:odd?)
+    expect(Leto.shared_mutable_state?(set1, *divided)).to eq false
   end
 end
 

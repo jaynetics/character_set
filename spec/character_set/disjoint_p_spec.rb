@@ -13,8 +13,15 @@ shared_examples :character_set_disjoint_p do |variant|
     expect(variant[97, 98, 99].disjoint?([])).to eq true
     expect(variant[97, 98, 99].disjoint?([96])).to eq true
     expect(variant[97, 98, 99].disjoint?([98])).to eq false
-    expect(variant[97, 98, 99].intersect?(sorted_set_class[98])).to eq true
-    expect(variant[97, 98, 99].intersect?(Class.new(sorted_set_class)[98])).to eq true
+    expect(variant[97, 98, 99].intersect?(Set[98])).to eq true
+    expect(variant[97, 98, 99].intersect?(Class.new(Set)[98])).to eq true
+  end
+
+  it 'does not create shared mutable state' do
+    set1 = variant[96, 97]
+    set2 = variant[97, 98]
+    set1.disjoint?(set2)
+    expect(Leto.shared_mutable_state?(set1, set2)).to eq false
   end
 end
 

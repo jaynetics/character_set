@@ -1,6 +1,9 @@
 shared_examples :character_set_to_a do |variant|
   it 'returns the codepoints as Array' do
     expect(variant[97, 98, 99].to_a).to eq [97, 98, 99]
+
+    cps = [0, 128, 0xD7FF, 0xD800, 0xDFFF, 0xE000, 0xFFFF, 0x10000, 0x10FFFF]
+    expect(variant.new(cps).to_a).to eq cps
   end
 
   it 'returns the codepoints as String if given `true`' do

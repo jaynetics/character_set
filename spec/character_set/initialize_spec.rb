@@ -14,6 +14,16 @@ shared_examples :character_set_initialize do |variant|
 
     expect(variant['foo'].to_a).to eq [42]
   end
+
+  it 'does not create shared mutable state' do
+    set1 = variant[96, 97]
+    set2 = variant.new(set1)
+    expect(Leto.shared_mutable_state?(set1, set2)).to eq false
+  end
+
+  it 'validates codepoints after the first member' do
+    expect { variant.new([0, 0x110000]) }.to raise_error(ArgumentError)
+  end
 end
 
 describe "CharacterSet#initialize" do

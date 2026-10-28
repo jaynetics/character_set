@@ -44,12 +44,11 @@ class CharacterSet
       end
 
       def cover?(string)
-        utf8_str!(string).each_codepoint { |cp| return false unless include?(cp) }
-        true
+        utf8_str!(string).each_codepoint.all? { |cp| include?(cp) }
       end
 
       def delete_in(string)
-        utf8_str!(string).each_codepoint.with_object('') do |cp, new_str|
+        utf8_str!(string).each_codepoint.with_object(+'') do |cp, new_str|
           include?(cp) || (new_str << cp)
         end.encode(string.encoding)
       end
@@ -60,7 +59,7 @@ class CharacterSet
       end
 
       def keep_in(string)
-        utf8_str!(string).each_codepoint.with_object('') do |cp, new_str|
+        utf8_str!(string).each_codepoint.with_object(+'') do |cp, new_str|
           include?(cp) && (new_str << cp)
         end.encode(string.encoding)
       end
@@ -71,14 +70,13 @@ class CharacterSet
       end
 
       def scan(string)
-        utf8_str!(string).each_codepoint.with_object([]) do |cp, arr|
-          arr.push(cp.chr('utf-8')) if include?(cp)
+        utf8_str!(string).each_codepoint.filter_map do |cp|
+          cp.chr('utf-8') if include?(cp)
         end
       end
 
       def used_by?(string)
-        utf8_str!(string).each_codepoint { |cp| return true if include?(cp) }
-        false
+        utf8_str!(string).each_codepoint.any? { |cp| include?(cp) }
       end
 
       def section(from:, upto: 0x10FFFF)
@@ -98,8 +96,7 @@ class CharacterSet
       end
 
       def planes
-        plane_size = 0x10000.to_f
-        inject({}) { |hash, cp| hash.merge((cp / plane_size).floor => 1) }.keys
+        map { |cp| cp / 0x10000 }.uniq
       end
 
       def plane(num)

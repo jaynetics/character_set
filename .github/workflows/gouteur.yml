@@ -7,14 +7,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v7
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: 3.3
-      - name: Prepare
-        run: |
-          bundle install --jobs 4
-          bundle exec rake compile
+          ruby-version: 3.4
+          bundler-cache: true
       - name: Test
-        run: bundle exec gouteur
+        run: |
+          bundle exec rake compile
+          bundle exec gouteur

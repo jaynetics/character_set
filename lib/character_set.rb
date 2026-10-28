@@ -7,9 +7,14 @@ require 'character_set/shared_methods'
 require 'character_set/version'
 require 'character_set/writer'
 
+# A set of Unicode codepoints with engine-specific storage backends.
 class CharacterSet
   begin
-    require 'character_set/character_set'
+    if RUBY_ENGINE == 'jruby'
+      require 'character_set/java'
+    else
+      require 'character_set/character_set' # C extension
+    end
   rescue LoadError
     require 'character_set/ruby_fallback'
     prepend RubyFallback

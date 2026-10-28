@@ -26,9 +26,6 @@ describe CharacterSet::PredefinedSets do
     it_behaves_like :predefined_character_set, :ascii
   end
 
-  # these tests are slow on java, the one above shall suffice
-  next if RUBY_PLATFORM[/java/i]
-
   describe '::any' do
     it 'includes all codepoints, including surrogates' do
       expect(CharacterSet.any.size).to eq 0x110000

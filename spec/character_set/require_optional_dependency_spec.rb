@@ -13,14 +13,11 @@ shared_examples :character_set_require_optional_dependency do |variant|
       .to raise_error(LoadError)
   end
 
-  it 'mentions the missing dependency and entry point in the error message',
-     if: Gem::Version.new(RUBY_VERSION.dup) >= Gem::Version.new('2.2.0') do
+  it 'mentions the missing dependency and entry point in the error message' do
     allow(variant).to receive(:new) do
       variant.require_optional_dependency('inexistent_gem', :foo)
     end
     foo = ->{ variant[] }
-
-    skip 'matcher is currently broken on jruby-head' if RUBY_PLATFORM[/java/i]
     expect { foo.call }.to raise_error(/inexistent_gem.*`foo'/)
   end
 end

@@ -12,6 +12,13 @@ shared_examples :character_set_ranges do |variant|
     expect(variant[0, 2, 3, 4, 6, 8, 11, 12].ranges)
       .to eq [0..0, 2..4, 6..6, 8..8, 11..12]
   end
+
+  it 'groups contiguous codepoints across storage and Unicode boundaries' do
+    codepoints = [0, 63, 64, 127, 128, 0xD7FF, 0xD800, 0xDFFF, 0xE000, 0xFFFF, 0x10000, 0x10FFFF]
+    expect(variant.new(codepoints).ranges).to eq [
+      0..0, 63..64, 127..128, 0xD7FF..0xD800, 0xDFFF..0xE000, 0xFFFF..0x10000, 0x10FFFF..0x10FFFF,
+    ]
+  end
 end
 
 describe "CharacterSet#ranges" do

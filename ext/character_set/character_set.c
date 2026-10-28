@@ -1,6 +1,5 @@
 #include "ruby.h"
 #include "ruby/encoding.h"
-#include "unicode_casefold_table.h"
 
 #define UNICODE_PLANE_SIZE 0x10000
 #define UNICODE_PLANE_COUNT 17
@@ -305,11 +304,7 @@ cs_method_max(VALUE self)
 static VALUE
 cs_method_minmax(VALUE self)
 {
-  VALUE arr;
-  arr = rb_ary_new2(2);
-  rb_ary_push(arr, cs_method_min(self));
-  rb_ary_push(arr, cs_method_max(self));
-  return arr;
+  return rb_ary_new_from_args(2, cs_method_min(self), cs_method_max(self));
 }
 
 #define RETURN_COMBINED_CS(cs_a, cs_b, comp_op)                  \
@@ -462,18 +457,33 @@ cs_cps_eql(VALUE cs_a, VALUE cs_b)
   return Qtrue;
 }
 
+static inline VALUE
+cs_is_pure_cs(VALUE obj)
+{
+  VALUE klass;
+  ID pure_id;
+  klass = rb_const_get(rb_cObject, rb_intern("CharacterSet"));
+  pure_id = rb_intern("Pure");
+  return rb_const_defined_at(klass, pure_id) &&
+         RTEST(rb_obj_is_kind_of(obj, rb_const_get_at(klass, pure_id)));
+}
+
 static VALUE
 cs_method_eql_p(VALUE self, VALUE other)
 {
-  if (!cs_check_type(other))
+  if (cs_check_type(other))
   {
-    return Qfalse;
+    if (self == other) // same object_id
+    {
+      return Qtrue;
+    }
+    return cs_cps_eql(self, other);
   }
-  if (self == other) // same object_id
+  if (cs_is_pure_cs(other))
   {
-    return Qtrue;
+    return rb_funcall(other, rb_intern("=="), 1, self);
   }
-  return cs_cps_eql(self, other);
+  return Qfalse;
 }
 
 static inline VALUE
@@ -568,7 +578,9 @@ cs_merge_rb_array(VALUE self, VALUE rb_array)
 static VALUE
 cs_method_merge(VALUE self, VALUE other)
 {
+
   rb_check_frozen(self);
+
   if (cs_check_type(other))
   {
     return cs_merge_cs(self, other);
@@ -577,12 +589,22 @@ cs_method_merge(VALUE self, VALUE other)
   {
     return cs_merge_rb_array(self, other);
   }
-  return cs_merge_rb_range(self, other);
+  if (rb_obj_is_kind_of(other, rb_cRange))
+  {
+    return cs_merge_rb_range(self, other);
+  }
+  if (cs_is_pure_cs(other))
+  {
+    return cs_merge_rb_array(self, rb_funcall(other, rb_intern("to_a"), 0, 0));
+  }
+
+  rb_raise(rb_eArgError, "pass a CharacterSet, Array, or Range");
 }
 
 static VALUE
 cs_method_initialize_copy(VALUE self, VALUE orig)
 {
+  rb_obj_init_copy(self, orig);
   cs_merge_cs(self, orig);
   return self;
 }
@@ -741,7 +763,7 @@ cs_method_sample(int argc, VALUE *argv, VALUE self)
   VALUE array, to_a_args[1] = {Qtrue};
   rb_check_arity(argc, 0, 1);
   array = cs_method_to_a(1, to_a_args, self);
-  return rb_funcall(array, rb_intern("sample"), argc, argc ? argv[0] : 0);
+  return rb_funcallv(array, rb_intern("sample"), argc, argv);
 }
 
 static inline VALUE
@@ -833,7 +855,6 @@ cs_method_ext_section_ratio(VALUE self, VALUE from, VALUE upto)
 
 #define MAX_CP 0x10FFFF
 #define MAX_ASCII_CP 0x7F
-#define MAX_BMP_CP 0xFFFF
 #define MIN_ASTRAL_CP 0x10000
 
 static inline VALUE
@@ -841,7 +862,7 @@ cs_has_cp_in_plane(cs_ar *cps, cs_cp len, unsigned int plane)
 {
   cs_cp plane_beg, plane_end;
   plane_beg = plane * UNICODE_PLANE_SIZE;
-  plane_end = (plane + 1) * MAX_BMP_CP;
+  plane_end = (plane + 1) * UNICODE_PLANE_SIZE - 1;
   return cs_has_cp_in_section(cps, len, plane_beg, plane_end);
 }
 
@@ -883,7 +904,7 @@ cs_method_plane(VALUE self, VALUE plane_num)
   cs_cp plane, plane_beg, plane_end;
   plane = cs_valid_plane_num(plane_num);
   plane_beg = plane * UNICODE_PLANE_SIZE;
-  plane_end = (plane + 1) * MAX_BMP_CP;
+  plane_end = (plane + 1) * UNICODE_PLANE_SIZE - 1;
   return cs_from_section(self, plane_beg, plane_end);
 }
 
@@ -936,44 +957,41 @@ add_str_cp_to_arr(unsigned int str_cp, cs_ar *cp_arr, cs_cp len, struct cs_data 
   return 1;
 }
 
+struct cs_case_fold_data
+{
+  cs_ar *cps;
+  cs_cp len;
+  struct cs_data *data;
+};
+
+static int
+cs_apply_case_fold(OnigCodePoint from, OnigCodePoint *to, int to_len, void *arg)
+{
+  struct cs_case_fold_data *fold = arg;
+
+  if (to_len == 1 && tst_cp(fold->cps, fold->len, from))
+  {
+    set_cp(fold->data, to[0]);
+  }
+
+  return 0;
+}
+
 static VALUE
 cs_method_case_insensitive(VALUE self)
 {
-  cs_cp i, len;
-  cs_ar *cps;
   VALUE new_cs;
-  struct cs_data *new_data;
+  struct cs_case_fold_data fold;
 
-  cps = cs_fetch_cps(self, &len);
-  new_cs = cs_alloc(RBASIC(self)->klass, &new_data);
+  fold.cps = cs_fetch_cps(self, &fold.len);
+  new_cs = cs_alloc(RBASIC(self)->klass, &fold.data);
   cs_merge_cs(new_cs, self);
 
-  for (i = 0; i < CASEFOLD_COUNT; i++)
-  {
-    casefold_mapping m = unicode_casefold_table[i];
-
-    if (tst_cp(cps, len, m.from))
-    {
-      set_cp(new_data, m.to);
-    }
-    else if (tst_cp(cps, len, m.to))
-    {
-      set_cp(new_data, m.from);
-    }
-  }
+  // Flags 0 exclude multi-character folds; the API supplies both directions.
+  ONIGENC_APPLY_ALL_CASE_FOLD(rb_utf8_encoding(), 0, cs_apply_case_fold, &fold);
+  RB_GC_GUARD(self);
 
   return new_cs;
-
-  // OnigCaseFoldType flags;
-  // rb_encoding *enc;
-  //
-  // enc = rb_utf8_encoding();
-  //
-  // ONIGENC_CASE_UPCASE | ONIGENC_CASE_DOWNCASE (not public on ruby < 2.4)
-  // flags = (1<<13) | (1<<14);
-  //
-  // // case_map args: flags, pp, end, to, to_end, enc
-  // enc->case_map(flags, (const OnigUChar**)&cp, ?, ?, ?, enc);
 }
 
 static inline VALUE
@@ -1029,23 +1047,13 @@ each_mb_cp(VALUE str, str_cp_handler func, cs_ar *cp_arr, cs_cp len, struct cs_d
   return Qtrue;
 }
 
-// single_byte_optimizable - copied from string.c
+// Keep byte iteration for ASCII text and binary input.
 static inline int
 single_byte_optimizable(VALUE str)
 {
-  rb_encoding *enc;
-  if (ENC_CODERANGE(str) == ENC_CODERANGE_7BIT)
-  {
-    return 1;
-  }
-
-  enc = rb_enc_get(str);
-  if (rb_enc_mbmaxlen(enc) == 1)
-  {
-    return 1;
-  }
-
-  return 0;
+  rb_encoding *enc = rb_enc_get(str);
+  return enc == rb_ascii8bit_encoding() ||
+         (rb_enc_asciicompat(enc) && ENC_CODERANGE(str) == ENC_CODERANGE_7BIT);
 }
 
 static inline VALUE
@@ -1162,7 +1170,8 @@ cs_apply_to_str(VALUE set, VALUE str, int delete, int bang)
 {
   cs_ar *cps;
   cs_cp cs_len;
-  VALUE orig_str_len;
+  VALUE original = str;
+  long working_str_len;
 
   rb_encoding *orig_enc, *utf8;
   char *s, *send, *t;
@@ -1170,9 +1179,12 @@ cs_apply_to_str(VALUE set, VALUE str, int delete, int bang)
 
   raise_arg_err_unless_string(str);
 
-  orig_str_len = RSTRING_LEN(str);
+  if (bang)
+    rb_check_frozen(original);
 
-  if (orig_str_len == 0)
+  working_str_len = RSTRING_LEN(str);
+
+  if (working_str_len == 0)
   {
     return bang ? Qnil : str;
   }
@@ -1233,17 +1245,17 @@ cs_apply_to_str(VALUE set, VALUE str, int delete, int bang)
   rb_str_set_len(str, t - RSTRING_PTR(str));
   ENC_CODERANGE_SET(str, cr);
 
-  if (bang && (RSTRING_LEN(str) == (long)orig_str_len)) // string unchanged
+  if (bang && (RSTRING_LEN(str) == working_str_len)) // string unchanged
   {
     return Qnil;
   }
 
   if (!orig_was_utf8)
   {
-    return rb_str_encode(str, rb_enc_from_encoding(orig_enc), 0, Qnil);
+    str = rb_str_encode(str, rb_enc_from_encoding(orig_enc), 0, Qnil);
   }
 
-  return str;
+  return bang ? rb_str_replace(original, str) : str;
 }
 
 static VALUE
@@ -1325,8 +1337,7 @@ void Init_character_set()
   rb_define_method(cs, "eql?", cs_method_eql_p, 1);
   rb_define_method(cs, "==", cs_method_eql_p, 1);
   rb_define_method(cs, "merge", cs_method_merge, 1);
-  rb_define_method(cs, "initialize_clone", cs_method_initialize_copy, 1);
-  rb_define_method(cs, "initialize_dup", cs_method_initialize_copy, 1);
+  rb_define_method(cs, "initialize_copy", cs_method_initialize_copy, 1);
   rb_define_method(cs, "subtract", cs_method_subtract, 1);
   rb_define_method(cs, "subset?", cs_method_subset_p, 1);
   rb_define_method(cs, "<=", cs_method_subset_p, 1);

@@ -2,7 +2,7 @@
 
 require 'bundler/setup'
 
-`bundle exec rake compile`
+`bundle exec rake compile` unless RUBY_ENGINE == 'jruby'
 
 require 'character_set'
 require 'character_set/core_ext'

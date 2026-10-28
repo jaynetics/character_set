@@ -7,9 +7,10 @@ shared_examples :character_set_from_ranges do |variant|
     expect(variant.from_ranges(3...1003).size).to eq 1000
     expect(variant.from_ranges(3...3).size).to eq 0
     expect(variant.from_ranges(3...1).size).to eq 0
+    expect(variant.from_ranges(0...1, 0x10FFFF...0x110000)).to eq variant[0, 0x10FFFF]
   end
 
-  it 'raises for open-ended Ranges', if: ruby_version_is_at_least('2.7') do
+  it 'raises for open-ended Ranges' do
     expect { variant.from_ranges(Range.new(nil, 4)) }.to raise_error(StandardError)
     expect { variant.from_ranges(Range.new(4, nil)) }.to raise_error(StandardError)
   end

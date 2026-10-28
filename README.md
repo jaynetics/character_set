@@ -5,7 +5,7 @@
 [![Build Status](https://github.com/jaynetics/character_set/workflows/gouteur/badge.svg)](https://github.com/jaynetics/character_set/actions)
 [![Coverage](https://codecov.io/gh/jaynetics/character_set/branch/main/graph/badge.svg?token=oY7gcWNbIN)](https://codecov.io/gh/jaynetics/character_set)
 
-This is a C-extended Ruby gem to work with sets of Unicode codepoints.
+This is a Ruby gem with C and Java extensions that allows fast operations on sets of Unicode codepoints.
 
 It can [read](#parseinitialize) and [write](#write) sets of codepoints in various formats and it implements the stdlib `Set` interface for them.
 
@@ -144,6 +144,7 @@ CharacterSet['a'].inversion(include_surrogates: true)
 
 ```ruby
 CharacterSet['1', 'A'].case_insensitive # => CharacterSet['1', 'A', 'a']
+CharacterSet['s'].case_insensitive # => CharacterSet["S", "s", "ſ"]
 ```
 
 ### Write

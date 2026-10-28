@@ -4,8 +4,8 @@ RSpec::Matchers.define(:be_memsafe) do
   match do |block|
     raise 'this matcher is only for callables' unless block.respond_to?(:call)
 
-    skip 'no need to check memsafety on this platform' if RUBY_PLATFORM[/java/i]
-    skip 'SKIP_MEMSAFETY_SPECS is set' if ENV['SKIP_MEMSAFETY_SPECS'].to_i == 1
+    skip 'no need to check memsafety on this platform' if RUBY_ENGINE == 'jruby'
+    skip 'QUICK_SPEC_RUN is set' if ENV['QUICK_SPEC_RUN'].to_i == 1
     skip 'memsafety check requires GC.compact' unless defined?(GC.compact)
 
     puts '  Checking memsafety! This can take LONG. Run `spec:quick` to skip.'

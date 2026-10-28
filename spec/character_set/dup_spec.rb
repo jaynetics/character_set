@@ -4,6 +4,23 @@ shared_examples :character_set_dup do |variant|
     orig = variant[97, 98, 99]
     expect(orig.dup.object_id).not_to eq(orig.object_id)
   end
+
+  it 'does not create shared mutable state' do
+    set1 = variant[96, 97]
+    set1.to_a # populate internal caches
+    set2 = set1.dup
+    expect(Leto.shared_mutable_state?(set1, set2)).to eq false
+    set2.add(98)
+    expect(set1.to_a).to eq [96, 97]
+  end
+
+  it 'returns a mutable copy of a frozen set' do
+    original = variant[1, 2].freeze
+    duplicate = original.dup
+    expect(duplicate).not_to be_frozen
+    duplicate.add(3)
+    expect(original.to_a).to eq [1, 2]
+  end
 end
 
 describe "CharacterSet#dup" do

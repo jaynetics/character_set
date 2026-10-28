@@ -4,6 +4,8 @@ shared_examples :character_set_count_in_section do |variant|
     expect(variant[3, 5, 7, 9].count_in_section(from: 4, upto: 8)).to eq 2
     expect(variant[3, 5, 7, 9].count_in_section(from: 6, upto: 6)).to eq 0
     expect(variant[3, 5, 7, 9].count_in_section(from: 0, upto: 1)).to eq 0
+    set = variant[0xD800, 0xFFFF, 0x10000, 0x10FFFF]
+    expect(set.count_in_section(from: 0xFFFF, upto: 0x10000)).to eq 2
   end
 end
 

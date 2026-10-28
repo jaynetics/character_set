@@ -28,6 +28,8 @@ Gemfile.lock
 /pkg/
 /spec/reports/
 /tmp/
+/vendor/
+/lib/character_set/character_set.jar
 
 # rspec failure tracking
 .rspec_status

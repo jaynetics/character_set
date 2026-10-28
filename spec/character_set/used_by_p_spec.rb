@@ -26,6 +26,10 @@ shared_examples :character_set_used_by_p do |variant|
   it 'raises ArgumentError for broken strings' do
     expect { variant[].used_by?("a\xC1\x80b") }.to raise_error(ArgumentError)
   end
+
+  it 'returns true before examining a malformed UTF-8 suffix' do
+    expect(variant['a'].used_by?("a\xC1\x80")).to be true
+  end
 end
 
 describe "CharacterSet#used_by?" do

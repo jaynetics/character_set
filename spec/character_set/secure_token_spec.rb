@@ -17,10 +17,10 @@ shared_examples :character_set_secure_token do |variant|
   end
 end
 
-describe 'CharacterSet#secure_token' do
+describe "CharacterSet#secure_token" do
   it_behaves_like :character_set_secure_token, CharacterSet
 end
 
-describe 'CharacterSet::Pure#secure_token' do
+describe "CharacterSet::Pure#secure_token" do
   it_behaves_like :character_set_secure_token, CharacterSet::Pure
 end

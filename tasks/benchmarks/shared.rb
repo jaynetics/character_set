@@ -1,10 +1,5 @@
 require 'benchmark/ips'
 require_relative '../../lib/character_set'
-if RUBY_VERSION.to_f >= 3.0 && !RUBY_PLATFORM[/java/i]
-  require 'sorted_set'
-else
-  require 'set'
-end
 
 def benchmark(caption: nil, cases: {})
   with_stdouts($stdout, string_io = StringIO.new) do

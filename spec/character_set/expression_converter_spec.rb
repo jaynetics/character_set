@@ -10,7 +10,7 @@ describe CharacterSet::ExpressionConverter do
     it 'converts into the given Set class' do
       expect(result(/a/, to: CharacterSet)).to       eq CharacterSet['a']
       expect(result(/a/, to: CharacterSet::Pure)).to eq CharacterSet::Pure['a']
-      expect(result(/a/, to: sorted_set_class)).to   eq sorted_set_class['a']
+      expect(result(/a/, to: Set)).to                eq Set['a']
     end
 
     it 'parses root expressions recursively' do

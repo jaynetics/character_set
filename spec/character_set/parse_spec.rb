@@ -19,10 +19,10 @@ shared_examples :character_set_parse do |variant|
   end
 end
 
-describe 'CharacterSet::parse' do
+describe "CharacterSet::parse" do
   it_behaves_like :character_set_parse, CharacterSet
 end
 
-describe 'CharacterSet::Pure::parse' do
+describe "CharacterSet::Pure::parse" do
   it_behaves_like :character_set_parse, CharacterSet::Pure
 end
