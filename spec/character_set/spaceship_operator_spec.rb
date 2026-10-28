@@ -4,6 +4,13 @@ shared_examples :character_set_spaceship_operator do |variant|
     expect(variant[97, 98] <=> variant[97]).to eq(1)
     expect(variant[97] <=> variant[97, 98]).to eq(-1)
   end
+
+  it 'does not create shared mutable state' do
+    set1 = variant[96, 97]
+    set2 = variant[96, 97, 98]
+    _ = set1 <=> set2
+    expect(Leto.shared_mutable_state?(set1, set2)).to eq false
+  end
 end
 
 describe "CharacterSet#spaceship_operator" do

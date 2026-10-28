@@ -27,6 +27,10 @@ shared_examples :character_set_cover_p do |variant|
   it 'raises ArgumentError for broken strings' do
     expect { variant[97].cover?("a\xC1\x80b") }.to raise_error(ArgumentError)
   end
+
+  it 'returns false before examining a malformed UTF-8 suffix' do
+    expect(variant[].cover?("a\xC1\x80")).to be false
+  end
 end
 
 describe "CharacterSet#cover?" do

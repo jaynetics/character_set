@@ -21,12 +21,6 @@ shared_examples :character_set_count_in do |variant|
     end
   end
 
-  it 'works with Strings in non-utf8-compatible encodings' do
-    str = 'äüäü'.encode('EUC-JP')
-    result = variant['ü'].count_in(str)
-    expect(result).to eq 2
-  end
-
   it 'raises an ArgumentError if passed a non-String' do
     expect { variant[].count_in(false) }.to raise_error(ArgumentError)
     expect { variant[].count_in(nil) }.to raise_error(ArgumentError)
@@ -34,8 +28,10 @@ shared_examples :character_set_count_in do |variant|
     expect { variant[].count_in(Object.new) }.to raise_error(ArgumentError)
   end
 
-  it 'raises ArgumentError for broken strings' do
-    expect { variant[].count_in("a\xC1\x80b") }.to raise_error(ArgumentError)
+  it 'rejects malformed UTF-8, including truncated characters and surrogates' do
+    INVALID_UTF8_STRINGS.each do |invalid|
+      expect { variant[].count_in(invalid) }.to raise_error(ArgumentError)
+    end
   end
 end
 

@@ -8,6 +8,7 @@ item_methods = %w[add add? delete delete? include? member?]
   describe "#{variant}##{method}" do
     it 'raises ArgumentError for inapplicable values' do
       expect { variant[].send(method, -1) }.to raise_error(ArgumentError)
+      expect { variant[].send(method, 0x110000) }.to raise_error(ArgumentError)
       expect { variant[].send(method, -(10**200)) }.to raise_error(ArgumentError)
       expect { variant[].send(method, 10**200) }.to raise_error(ArgumentError)
       expect { variant[].send(method, nil) }.to raise_error(ArgumentError)
@@ -25,6 +26,7 @@ mass_methods = %w[merge subtract + - & ^ > >= < <= <=> intersect? disjoint?]
     it 'raises ArgumentError or TypeError for inapplicable values' do
       check = ->(err){ expect([ArgumentError, TypeError]).to include err.class }
       expect { variant[].send(method, [0, -1]) }.to raise_error(&check)
+      expect { variant[].send(method, [0, 0x110000]) }.to raise_error(&check)
       expect { variant[].send(method, [0, -(10**200)]) }.to raise_error(&check)
       expect { variant[].send(method, [0, 10**200]) }.to raise_error(&check)
       expect { variant[].send(method, [0, nil]) }.to raise_error(&check)

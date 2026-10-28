@@ -38,11 +38,13 @@ shared_examples :character_set_keep_in do |variant|
     end
   end
 
-  it 'works with Strings in non-utf8-compatible encodings' do
-    str = 'äü'.encode('EUC-JP')
-    result = variant['ü'].keep_in(str)
-    expect(result.encoding).to eq Encoding.find('EUC-JP')
-    expect(result).to eq 'ü'.encode('EUC-JP')
+  NON_ASCII_ENCODING_SAMPLES.each do |encoding, text|
+    it "filters non-ASCII #{encoding} strings, keeping the original encoding" do
+      original = text.encode(encoding)
+      result = variant[text[-1]].keep_in(original)
+      expect(result.encoding).to eq original.encoding
+      expect(result).to eq text[-1].encode(encoding)
+    end
   end
 
   it 'raises an ArgumentError if passed a non-String' do
@@ -54,6 +56,21 @@ shared_examples :character_set_keep_in do |variant|
 
   it 'raises ArgumentError for broken strings' do
     expect { variant[].keep_in("a\xC1\x80b") }.to raise_error(ArgumentError)
+  end
+
+  it 'isolates mutations of its result from the source buffer' do
+    source = 'a😋ü' * 100
+    result = variant['😋'].keep_in(source)
+    result.replace('changed')
+    expect(source).to eq 'a😋ü' * 100
+  end
+
+  it 'returns an independent string when no characters are removed' do
+    source = 'a😋ü'
+    result = variant.of_string(source).keep_in(source)
+    expect(result).not_to equal source
+    result.replace('changed')
+    expect(source).to eq 'a😋ü'
   end
 end
 

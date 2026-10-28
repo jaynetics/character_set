@@ -40,11 +40,13 @@ shared_examples :character_set_delete_in do |variant|
     end
   end
 
-  it 'works with Strings in non-utf8-compatible encodings' do
-    str = 'äü'.encode('EUC-JP')
-    result = variant['ü'].delete_in(str)
-    expect(result.encoding).to eq Encoding.find('EUC-JP')
-    expect(result).to eq 'ä'.encode('EUC-JP')
+  NON_ASCII_ENCODING_SAMPLES.each do |encoding, text|
+    it "filters non-ASCII #{encoding} strings, keeping the original encoding" do
+      original = text.encode(encoding)
+      result = variant[text[-1]].delete_in(original)
+      expect(result.encoding).to eq original.encoding
+      expect(result).to eq text[0].encode(encoding)
+    end
   end
 
   it 'raises an ArgumentError if passed a non-String' do
@@ -54,8 +56,10 @@ shared_examples :character_set_delete_in do |variant|
     expect { variant[].delete_in(Object.new) }.to raise_error(ArgumentError)
   end
 
-  it 'raises ArgumentError for broken strings' do
-    expect { variant[].delete_in("a\xC1\x80b") }.to raise_error(ArgumentError)
+  it 'rejects malformed UTF-8, including truncated characters and surrogates' do
+    INVALID_UTF8_STRINGS.each do |invalid|
+      expect { variant[].delete_in(invalid) }.to raise_error(ArgumentError)
+    end
   end
 end
 

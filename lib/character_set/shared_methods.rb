@@ -82,6 +82,14 @@ class CharacterSet
           self - self.class.surrogate
         end
 
+        def marshal_dump
+          to_a
+        end
+
+        def marshal_load(data)
+          initialize(data)
+        end
+
         # CharacterSet-specific stringification methods
 
         def to_s(opts = {}, &block)
@@ -164,9 +172,38 @@ class CharacterSet
           each_with_object({}) { |cp, h| (h[yield(cp)] ||= self.class.new).add(cp) }
         end
 
+        # Note: Set#divide behavior with a 2-arity block changed in Ruby 4.
+        # This implementation has the new, more sensible behavior.
+        # https://github.com/ruby/ruby/blob/453a69e/spec/ruby/core/set/divide_spec.rb#L34-L48
         def divide(&func)
-          require 'character_set/ruby_fallback'
-          CharacterSet::RubyFallback::Set.new(to_a).divide(&func)
+          func or return enum_for(__method__) { size }
+
+          klass = defined?(::Set) ? ::Set : ::Array
+
+          if func.arity == 2
+            class << dig = {}
+              require 'tsort'
+              include TSort
+
+              alias tsort_each_node each_key
+              def tsort_each_child(node, &block)
+                fetch(node).each(&block)
+              end
+            end
+
+            each do |cp|
+              dig[cp] = arr = []
+              each { |cp2| arr << cp2 if cp != cp2 && func.call(cp, cp2) }
+            end
+
+            set = klass.new
+            dig.each_strongly_connected_component do |css|
+              set << self.class.new(css)
+            end
+            set
+          else
+            klass.new(classify(&func).values)
+          end
         end
 
         def join(separator = '')

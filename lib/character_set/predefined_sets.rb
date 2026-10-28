@@ -23,7 +23,7 @@ class CharacterSet
 
     def build_from_cps_file(path)
       if defined?(Ractor) && Ractor.current != Ractor.main
-        raise <<-EOS.gsub(/^ */, '')
+        raise <<~EOS
           CharacterSet's predefined sets are lazy-loaded.
           Pre-load them to use them in Ractors. E.g.:
 

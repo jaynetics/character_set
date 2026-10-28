@@ -13,6 +13,21 @@ shared_examples :character_set_inversion do |variant|
     result = variant.new.inversion(upto: 0xE000, include_surrogates: true)
     expect(result).to eq variant.new(0..0xE000)
   end
+
+  it 'does not create shared mutable state' do
+    set1 = variant[96, 97]
+    set2 = set1.inversion(upto: 200)
+    expect(Leto.shared_mutable_state?(set1, set2)).to eq false
+  end
+
+  it 'preserves the subclass and isolates result mutations' do
+    subclass = Class.new(variant)
+    source = subclass[1, 2]
+    result = source.inversion(upto: 4)
+    expect(result).to be_a subclass
+    result.add(99)
+    expect(source.to_a).to eq [1, 2]
+  end
 end
 
 describe "CharacterSet#inversion" do

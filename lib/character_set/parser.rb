@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CharacterSet
   module Parser
     module_function
@@ -18,7 +20,7 @@ class CharacterSet
 
     def codepoints_from_bracket_expression(string)
       raise ArgumentError, 'pass a String'   unless string.is_a?(String)
-      raise ArgumentError, 'advanced syntax' if string =~ /\\[^uUx]|[^\\]\[|&&/
+      raise ArgumentError, 'advanced syntax' if string.match?(/\\[^uUx]|[^\\]\[|&&/)
 
       content = strip_brackets(string)
       literal_content = eval_escapes(content)
@@ -26,7 +28,7 @@ class CharacterSet
       prev_chr = nil
       in_range = false
 
-      literal_content.each_char.map do |chr|
+      literal_content.each_char.filter_map do |chr|
         if chr == '-' && prev_chr && prev_chr != '\\' && prev_chr != '-'
           in_range = true
           nil
@@ -36,7 +38,7 @@ class CharacterSet
           prev_chr = chr
           result
         end
-      end.compact.flatten
+      end.flatten
     end
 
     def strip_brackets(string)

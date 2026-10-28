@@ -4,7 +4,7 @@ class CharacterSet
       def write(codepoint_ranges, opts = {}, &block)
         content = codepoint_ranges.map do |range|
           if range.size > 2 && opts[:abbreviate] != false
-            bounds = [range.min, range.max]
+            bounds = [range.min, range.max] # minmax is slow on some rubies
             bounds.map { |cp| write_codepoint(cp, opts, &block) }.join('-')
           else
             range.map { |cp| write_codepoint(cp, opts, &block) }.join

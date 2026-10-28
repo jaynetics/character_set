@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+The minimum ruby version is now 3.0 (3.1 in jruby).
+
+### Added
+
+- fast Java backend based on `BitSet` operations (#4)
+- updated predefined "assigned" and "emoji" sets
+- complete casefold mapping (e.g. `k` => `K`, `K`)
+
 ## [1.8.0] - 2024-01-07
 
 ### Added
